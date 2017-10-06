@@ -65,8 +65,7 @@ decl_list	: decl decl_list
 			;
 
 decl		: TOKEN_IDENTIFIER TOKEN_COLON type TOKEN_SEMICOLON
-			| TOKEN_IDENTIFIER TOKEN_COLON type TOKEN_ASSIGN expr TOKEN_SEMICOLON 
-			| TOKEN_IDENTIFIER TOKEN_COLON type TOKEN_ASSIGN TOKEN_LCURLY stmt_list TOKEN_RCURLY;
+			| TOKEN_IDENTIFIER TOKEN_COLON type TOKEN_ASSIGN stmt 
 			;
 
 type		: TOKEN_INTEGER
@@ -115,41 +114,53 @@ expr7		: expr7 TOKEN_EXPONENT expr8
 			;
 
 expr8		: TOKEN_NEGATION expr9
+			| TOKEN_MINUS expr9
 			| expr9
 			;
 
-expr9		: expr10 TOKEN_INCREMENT
-			| expr10 TOKEN_DECREMENT
+expr9		: expr9 TOKEN_INCREMENT
+			| expr9 TOKEN_DECREMENT
 			| expr10
 			;
 
-expr10		: TOKEN_LPAREN expr TOKEN_RPAREN
-			| TOKEN_IDENTIFIER TOKEN_LBRACKET expr TOKEN_RBRACKET bracket_list
-			| TOKEN_IDENTIFIER TOKEN_LPAREN func_args TOKEN_RPAREN
-			| TOKEN_IDENTIFIER
+expr10		: TOKEN_IDENTIFIER expr11
 			| TOKEN_INT_LITERAL
 			| TOKEN_CHAR_LITERAL
 			| TOKEN_STRING_LITERAL
 			| TOKEN_TRUE
 			| TOKEN_FALSE
+			| TOKEN_LCURLY expr_list TOKEN_RCURLY
+			| TOKEN_LPAREN expr TOKEN_RPAREN
 			;
 
+expr11		: TOKEN_LBRACKET expr TOKEN_RBRACKET bracket_list
+			| TOKEN_LPAREN expr_list TOKEN_RPAREN
+			|
+			;
 
 opt_expr	: expr
 			|
 			;
 
-stmt		: expr TOKEN_SEMICOLON
-			| TOKEN_LCURLY stmt_list TOKEN_RCURLY
-			| TOKEN_IDENTIFIER TOKEN_ASSIGN expr
-			| TOKEN_RETURN opt_expr TOKEN_SEMICOLON
-			| TOKEN_PRINT func_args TOKEN_SEMICOLON
-			| TOKEN_IF TOKEN_LPAREN expr TOKEN_RPAREN stmt_else
+stmt		: stmt2
+			| stmt3
 			| TOKEN_FOR TOKEN_LPAREN opt_expr TOKEN_SEMICOLON opt_expr TOKEN_SEMICOLON opt_expr TOKEN_RPAREN stmt
+			| decl
 			;
 
-stmt_else	: stmt
-			| TOKEN_ELSE stmt
+stmt2		: TOKEN_IF TOKEN_LPAREN expr TOKEN_RPAREN stmt
+			| TOKEN_IF TOKEN_LPAREN expr TOKEN_RPAREN stmt4 TOKEN_ELSE stmt
+			;
+
+stmt3		: TOKEN_LCURLY stmt stmt_list TOKEN_RCURLY
+			| expr TOKEN_SEMICOLON
+			| TOKEN_RETURN opt_expr TOKEN_SEMICOLON
+			| TOKEN_PRINT expr_list TOKEN_SEMICOLON
+			;
+
+stmt4		: TOKEN_IF TOKEN_LPAREN expr TOKEN_RPAREN stmt4 TOKEN_ELSE stmt4
+			| TOKEN_FOR TOKEN_LPAREN opt_expr TOKEN_SEMICOLON opt_expr TOKEN_SEMICOLON opt_expr TOKEN_RPAREN stmt4
+			| stmt3
 			;
 
 stmt_list	: stmt stmt_list
@@ -157,7 +168,7 @@ stmt_list	: stmt stmt_list
 			;
 
 param_list	: TOKEN_IDENTIFIER TOKEN_COLON type 
-			| TOKEN_IDENTIFIER TOKEN_COLON type TOKEN_COMMA param_list 
+			| param_list TOKEN_COMMA TOKEN_IDENTIFIER TOKEN_COLON type 
 			| 
 			;
 
@@ -165,9 +176,8 @@ bracket_list: TOKEN_LBRACKET expr TOKEN_RBRACKET bracket_list
 			| 
 			;
 
-
-func_args	: expr 
-			| expr TOKEN_COMMA func_args
+expr_list	: expr 
+			| expr TOKEN_COMMA expr_list
 			| 
 			;
 
