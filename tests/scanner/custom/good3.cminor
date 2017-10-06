@@ -1,0 +1,5 @@
+// characters
+c: char = '\"'
+c: char = '0';
+c = '\0';
+c = '\'';

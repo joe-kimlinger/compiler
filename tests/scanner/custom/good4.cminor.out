@@ -1,0 +1,11 @@
+COMMENT
+STRING_LITERAL -_=&^%$#@!*()|\
+STRING_LITERAL hello 
+ goodbye
+STRING_LITERAL t dsadfsd b
+STRING_LITERAL  "hello" 
+STRING_LITERAL  'this works' 
+IDENTIFIER x
+COLON
+STRING
+STRING_LITERAL I should see this

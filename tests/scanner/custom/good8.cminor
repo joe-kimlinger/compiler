@@ -1,0 +1,8 @@
+// keywords
+ar: array []
+f: function()
+while (1 > 2)
+if (x < 2)
+return void
+else
+print "x", 5, "five"

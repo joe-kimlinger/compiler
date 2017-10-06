@@ -1,0 +1,7 @@
+// String
+"-_=&^%$#@!*()|\\"
+"hello \n goodbye"
+"\t dsadfsd \b"
+" \"hello\" "
+" 'this works' "
+x: string "I should see this\0I shouldnt see this"

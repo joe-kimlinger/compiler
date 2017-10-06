@@ -1,0 +1,11 @@
+COMMENT
+IDENTIFIER ident55
+IDENTIFIER ident55_
+IDENTIFIER ident__55__
+IDENTIFIER thisIsAReallyReallyLongIdentifierNameThatHasTonsOfLettersInIt
+ASSIGN
+INTEGER_LITERAL 7
+IDENTIFIER variable_names_may_contain_underscores_
+IDENTIFIER _variables_can_start_with_an_underscore_67
+INTEGER_LITERAL 7
+IDENTIFIER minus5

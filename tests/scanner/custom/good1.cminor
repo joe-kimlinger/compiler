@@ -1,0 +1,5 @@
+// integers
+x: integer;
+integer: 50023e342
+array [3] integer
+{1, 2, 3, 5}

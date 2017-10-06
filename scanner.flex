@@ -1,12 +1,16 @@
 
 %{
 #include "tokens.h"
+char* string_clean(char*);
+char* char_clean(char*);
 %}
 
+%option nounput
+%option noinput
 
 %%
-\/\*([^\*]|\*[^\/])*\*+\/	{return TOKEN_COMMENT;}
-\/\/[^(\\n)]*\n				{return TOKEN_COMMENT;}
+\/\*([^\*]|\*[^\/])*\*+\/	{}
+\/\/[^\n]*\n				{}
 array 						{return TOKEN_ARRAY;}
 boolean						{return TOKEN_BOOLEAN;}
 char						{return TOKEN_CHAR;}
@@ -24,13 +28,13 @@ void						{return TOKEN_VOID;}
 while						{return TOKEN_WHILE;}
 --							{return TOKEN_DECREMENT;}
 \+\+						{return TOKEN_INCREMENT;}
--!							{return TOKEN_NEGATION;}
+!							{return TOKEN_NEGATION;}
 \(							{return TOKEN_LPAREN;}
 \)							{return TOKEN_RPAREN;}
-\[							{return TOKEN_LSQBRACKET;}
-\]							{return TOKEN_RSQBRACKET;}
-\{							{return TOKEN_LBRACKET;}
-\}							{return TOKEN_RBRACKET;}
+\[							{return TOKEN_LBRACKET;}
+\]							{return TOKEN_RBRACKET;}
+\{							{return TOKEN_LCURLY;}
+\}							{return TOKEN_RCURLY;}
 \+							{return TOKEN_PLUS;}
 -							{return TOKEN_MINUS;}
 \^							{return TOKEN_EXPONENT;}
@@ -49,17 +53,17 @@ while						{return TOKEN_WHILE;}
 ;							{return TOKEN_SEMICOLON;}
 ,							{return TOKEN_COMMA;}
 =							{return TOKEN_ASSIGN;}
-\'([a-zA-Z0-9]|\\[A-Za-z0-9])\'	{yytext = char_clean(yytext);
-									return TOKEN_CHARACTER_LITERAL;}
-[0-9]+						{return TOKEN_INTEGER_LITERAL;}
-\"(\\.|[^\\"\n])*\"			{if (strlen(yytext) <= 256){
-								yytext = string_clean(yytext);
+\'([^\\]|\\.)\'				{yytext = char_clean(yytext);
+									return TOKEN_CHAR_LITERAL;}
+[0-9]+						{return TOKEN_INT_LITERAL;}
+\"(\\.|[^\\"\n])*\"			{yytext = string_clean(yytext);
+							 if (strlen(yytext) < 254){
 								return TOKEN_STRING_LITERAL;
 							 } else{
 								return TOKEN_LENGTH_ERROR;
 							}
 							}
-[a-zA-Z_][A-Za-z_0-9]*		{if (strlen(yytext) <= 256)
+[a-zA-Z_][A-Za-z_0-9]*		{if (strlen(yytext) < 256)
 								return TOKEN_IDENTIFIER;
 							 else
 								return TOKEN_LENGTH_ERROR;}
@@ -73,14 +77,17 @@ int yywrap() {
 }
 
 char* string_clean(char* string){
-	int length = 0;
 	char* lead = ++string + 1;
 	char* rear = string;
-	while (*lead != 0){
-		if (*rear == '\\' && *lead == 'n'){
+	while (*lead != '\0'){
+		if (*rear == '\\'){
+			if (*lead == 'n'){
+				*lead = '\n';
+			} else if (*lead == '0'){
+				*rear = '\0';
+			}
 			char* rearTemp = rear;
 			char* leadTemp = lead;
-			*lead = '\n';
 			while (*rearTemp != 0){
 				*rearTemp = *leadTemp;
 				rearTemp++; leadTemp++;
@@ -102,7 +109,7 @@ char* char_clean(char* c){
 			*rear = '\0';
 		else 
 			*rear = *head;
-		*head = '\0';
 	}
+	*head = '\0';
 	return rear;
 }

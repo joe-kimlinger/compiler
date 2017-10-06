@@ -1,0 +1,8 @@
+// Coments
+,
+/* This is a multi-
+line comment
+that should be picked up as one*/
+;
+/**/
+beforeComment/*******comment*******/afterComment
