@@ -1,4 +1,5 @@
 #include "tokens.h"
+#include "decl.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -7,6 +8,7 @@ extern FILE *yyin;
 extern int yylex();
 extern char *yytext;
 extern int yyparse();
+extern struct decl * parser_result;
 
 
 int main(int argc, char* argv[]){
@@ -177,7 +179,7 @@ int main(int argc, char* argv[]){
 		}
 	}
 	if (yyparse() == 0){
-		printf("Parse successful\n");
+		decl_print(parser_result, 0);
 		return 0;
 	} else {
 		printf("Parse failed\n");
