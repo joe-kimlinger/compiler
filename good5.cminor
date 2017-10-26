@@ -1,0 +1,11 @@
+f: function void() = {
+	for (;;){
+		if (i == 2)
+			if (j < k)
+				if (1)
+					return 1;
+				else
+					return 0;
+	}
+}
+

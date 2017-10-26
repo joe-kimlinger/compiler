@@ -1,0 +1,6 @@
+i: integer = 5 - 6++;
+f: function array [5] string() = {
+	j++; i--;
+	j++ - i--;
+	print;
+}

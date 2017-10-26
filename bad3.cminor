@@ -1,0 +1,5 @@
+f: function void() = {
+	x: string = "hi";
+	b: boolean = false;
+	;
+}

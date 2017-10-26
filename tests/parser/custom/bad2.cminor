@@ -1,0 +1,9 @@
+f: function void() = {
+	for (i = 0; ; i++){
+		"here";
+	}
+	for (int j = 0; j < 2; j++){
+		"not here";
+	}
+
+}

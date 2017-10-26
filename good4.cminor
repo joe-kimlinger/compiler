@@ -1,0 +1,4 @@
+s: string = "Hello there";
+a: array [10] array [10] array [10] integer = {12, 23, 34, 45, 56};
+c: char = 'C';
+t: string = /*throw this comment out*/ "here";

@@ -1,0 +1,4 @@
+main: function void()={
+	f("foo", bar, a[i]);
+	d((12), i < 3,,);
+}

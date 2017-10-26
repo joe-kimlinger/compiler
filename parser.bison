@@ -211,7 +211,7 @@ expr10		: ident expr11
 			| TOKEN_LCURLY expr_list TOKEN_RCURLY
 				{ $$ = expr_create(EXPR_ARRAY_INIT, $2, 0); }
 			| TOKEN_LPAREN expr TOKEN_RPAREN
-				{ $$ = $2; }
+				{ $$ = expr_create(EXPR_PARENS, $2, 0); }
 			;
 
 expr11		: TOKEN_LBRACKET expr TOKEN_RBRACKET bracket_list

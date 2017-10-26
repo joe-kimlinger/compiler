@@ -1,0 +1,5 @@
+f: function void()={
+	if ('h' == 'p')
+		return;
+}
+print "Outside of declaration";

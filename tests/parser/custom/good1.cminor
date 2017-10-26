@@ -1,0 +1,6 @@
+x: integer = 5;
+s: string = "hello";
+a: array [6] integer;
+f: function integer() = {
+	return 5;
+}

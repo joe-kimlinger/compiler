@@ -1,0 +1,4 @@
+x: integer = {};
+s: string = 'l';
+// These are all ok
+f: string = "typo":

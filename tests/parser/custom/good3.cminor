@@ -1,0 +1,5 @@
+x: integer = b^2;
+y: integer = 5 % f;
+z: integer = 5 * 4 - 3 / 1;
+d: integer = 5 - (-2);
+d: integer = 5 - -2;

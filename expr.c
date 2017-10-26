@@ -82,6 +82,11 @@ void expr_print(struct expr *e){
 			printf(" %% ");
 			expr_print(e->right);
 			break;
+		case EXPR_EXPONENT:
+			expr_print(e->left);
+			printf("^");
+			expr_print(e->right);
+			break;
 		case EXPR_ASSIGN:
 			expr_print(e->left);
 			printf(" = ");
@@ -126,6 +131,15 @@ void expr_print(struct expr *e){
 			expr_print(e->left);
 			printf(" != ");
 			expr_print(e->right);
+			break;
+		case EXPR_PARENS:
+			if (e->left && e->left->kind != EXPR_PARENS){
+				printf("(");
+				expr_print(e->left);
+				printf(")");
+			} else {
+				expr_print(e->left);
+			}
 			break;
 		case EXPR_SUBSCRIPT:
 			expr_print(e->left);

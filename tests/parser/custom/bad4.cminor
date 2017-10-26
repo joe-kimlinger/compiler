@@ -1,0 +1,3 @@
+a: array [] integer;
+b: array [j++] boolean;
+g: array["hello"] char = (0, 1, 2, 3);

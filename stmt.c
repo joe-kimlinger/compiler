@@ -39,8 +39,9 @@ void stmt_print(struct stmt *s, int indent){
 					printf(" else {\n");
 					stmt_print(s->else_body, indent + 1);
 					for (i = 0; i < indent; i++) printf("\t");
-					printf("}\n");
+					printf("}");
 				}
+				printf("\n");
 				break;
 
 			case STMT_FOR:

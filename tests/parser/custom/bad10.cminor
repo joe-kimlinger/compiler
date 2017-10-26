@@ -1,0 +1,5 @@
+main: function void() = {
+	i++;
+	j++;
+	print "i: " i "j: " j;
+}

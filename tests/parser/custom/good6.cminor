@@ -1,0 +1,6 @@
+b: boolean = true;
+main: function void (a: boolean, t: integer) = {
+	print "My boolean is ", b, " and my int is ", t;
+	return;
+}
+empty: function void() = {}

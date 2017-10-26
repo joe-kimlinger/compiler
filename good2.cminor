@@ -1,0 +1,6 @@
+main:function void(x:integer) = {
+	print "Hello ", x;
+	f(b, a, d);
+	f(1, 2, 3);
+	f(a[1], true);
+}
