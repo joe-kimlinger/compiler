@@ -59,27 +59,27 @@ void expr_print(struct expr *e){
 	switch(e->kind){
 		case EXPR_ADD:
 			expr_print(e->left);
-			printf(" + ");
+			printf("+");
 			expr_print(e->right);
 			break;
 		case EXPR_SUB:
 			expr_print(e->left);
-			printf(" - ");
+			printf("-");
 			expr_print(e->right);
 			break;
 		case EXPR_MUL:
 			expr_print(e->left);
-			printf(" * ");
+			printf("*");
 			expr_print(e->right);
 			break;
 		case EXPR_DIV:
 			expr_print(e->left);
-			printf(" / ");
+			printf("/");
 			expr_print(e->right);
 			break;
 		case EXPR_MOD:
 			expr_print(e->left);
-			printf(" %% ");
+			printf("%%");
 			expr_print(e->right);
 			break;
 		case EXPR_EXPONENT:
@@ -89,47 +89,47 @@ void expr_print(struct expr *e){
 			break;
 		case EXPR_ASSIGN:
 			expr_print(e->left);
-			printf(" = ");
+			printf("=");
 			expr_print(e->right);
 			break;
 		case EXPR_OR:
 			expr_print(e->left);
-			printf(" || ");
+			printf("||");
 			expr_print(e->right);
 			break;
 		case EXPR_AND:
 			expr_print(e->left);
-			printf(" && ");
+			printf("&&");
 			expr_print(e->right);
 			break;
 		case EXPR_LT:
 			expr_print(e->left);
-			printf(" < ");
+			printf("<");
 			expr_print(e->right);
 			break;
 		case EXPR_GT:
 			expr_print(e->left);
-			printf(" > ");
+			printf(">");
 			expr_print(e->right);
 			break;
 		case EXPR_GE:
 			expr_print(e->left);
-			printf(" >= ");
+			printf(">=");
 			expr_print(e->right);
 			break;
 		case EXPR_LE:
 			expr_print(e->left);
-			printf(" <= ");
+			printf("<=");
 			expr_print(e->right);
 			break;
 		case EXPR_EQ:
 			expr_print(e->left);
-			printf(" == ");
+			printf("==");
 			expr_print(e->right);
 			break;
 		case EXPR_NE:
 			expr_print(e->left);
-			printf(" != ");
+			printf("!=");
 			expr_print(e->right);
 			break;
 		case EXPR_PARENS:
@@ -161,7 +161,6 @@ void expr_print(struct expr *e){
 			printf("{");
 			if (e->left){
 			   expr_print(e->left);
-			   printf(" ");
 			}
 			printf("}");
 			break;
@@ -199,7 +198,7 @@ void expr_print(struct expr *e){
 		case EXPR_ARG:
 			if (e->left){
 			   expr_print(e->left);
-			   printf(", ");
+			   printf(",");
 			}
 			if (e->right) expr_print(e->right);
 			break;

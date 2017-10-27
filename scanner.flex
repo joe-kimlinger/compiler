@@ -2,6 +2,7 @@
 %{
 #include "tokens.h"
 char* string_clean(char*);
+int string_check_length(char*);
 char* char_clean(char*);
 %}
 
@@ -57,7 +58,7 @@ while						{return TOKEN_WHILE;}
 									return TOKEN_CHAR_LITERAL;}
 [0-9]+						{return TOKEN_INT_LITERAL;}
 \"(\\.|[^\\"\n])*\"			{yytext = string_clean(yytext);
-							 if (strlen(yytext) < 254){
+							 if (string_check_length(strdup(yytext))){
 								return TOKEN_STRING_LITERAL;
 							 } else{
 								return TOKEN_LENGTH_ERROR;
@@ -80,6 +81,16 @@ char* string_clean(char* string){
 	char* lead = ++string + 1;
 	char* rear = string;
 	while (*lead != '\0'){
+		lead++; rear++;
+	}
+	*rear = '\0';
+	return string;
+}
+
+int string_check_length(char* string){
+	char* lead = ++string + 1;
+	char* rear = string;
+	while (*lead != '\0'){
 		if (*rear == '\\'){
 			if (*lead == 'n'){
 				*lead = '\n';
@@ -96,20 +107,17 @@ char* string_clean(char* string){
 		lead++; rear++;
 	}
 	*rear = '\0';
-	return string;
+	if (strlen(string) < 254)
+		return 1;
+	else
+		return 0;
 }
 
 char* char_clean(char* c){
 	char* rear = ++c;
 	char* head = ++c;
-	if (*rear == '\\'){
-		if (*head == 'n')
-			*rear = '\n';
-		else if (*head == '0')
-			*rear = '\0';
-		else 
-			*rear = *head;
-	}
+	if (*rear == '\\')
+		head++;
 	*head = '\0';
 	return rear;
 }
