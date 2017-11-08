@@ -161,7 +161,6 @@ void expr_print(struct expr *e){
 			printf("{");
 			if (e->left){
 			   expr_print(e->left);
-			   printf(" ");
 			}
 			printf("}");
 			break;
@@ -209,7 +208,7 @@ void expr_print(struct expr *e){
 		case EXPR_ARG:
 			if (e->left){
 			   expr_print(e->left);
-			   printf(", ");
+			   printf(",");
 			}
 			if (e->right) expr_print(e->right);
 			break;

@@ -1,6 +1,6 @@
-CC=			/usr/bin/gcc
+CC=			gcc
 CFLAGS=		-g -gdwarf-2 -Wall -std=gnu99
-LD=			/usr/bin/gcc
+LD=			gcc
 LDFLAGS=	-L.
 
 TARGETS=	cminor
