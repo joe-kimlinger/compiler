@@ -7,7 +7,7 @@ TARGETS=	cminor
 
 all:		$(TARGETS)
 
-cminor:	parser.tab.o scanner.o main.o decl.o expr.o param_list.o stmt.o type.o
+cminor:	parser.tab.o hash_table.o scanner.o main.o decl.o expr.o scope.o symbol.o param_list.o stmt.o type.o
 	$(LD) $(LDFLAGS) -o $@ $^
 
 parser.tab.c:	parser.bison
@@ -23,6 +23,15 @@ main.o:	main.c tokens.h parser.tab.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 decl.o: decl.c decl.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+scope.o: scope.c scope.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+hash_table.o: hash_table.c hash_table.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+symbol.o: symbol.c symbol.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 expr.o: expr.c expr.h

@@ -178,11 +178,12 @@ int main(int argc, char* argv[]){
 			}
 		}
 	}
-	if (yyparse() == 0){
-		decl_print(parser_result, 0);
-		return 0;
-	} else {
+	if (yyparse()){
 		printf("Parse failed\n");
-		return 1;
+		exit(1);
+	} else if (strcmp(argv[1], "-print") == 0){
+		decl_print(parser_result, 0);
+	} else{
+		decl_resolve(parser_result);
 	}
 }

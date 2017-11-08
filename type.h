@@ -3,6 +3,7 @@
 
 #include "param_list.h"
 #include "expr.h"
+#include <stdlib.h>
 
 typedef enum {
 	TYPE_BOOLEAN,
@@ -22,6 +23,7 @@ struct type {
 };
 
 struct type * type_create( type_kind_t kind, struct param_list *params, struct type *subtype , struct expr *size);
-void          type_print( struct type *t );
+void type_print( struct type *t );
+int type_equals( struct type *a, struct type *b );
 
 #endif

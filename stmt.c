@@ -1,5 +1,4 @@
 #include "stmt.h"
-#include <stdlib.h>
 
 struct stmt * stmt_create( stmt_kind_t kind, struct decl *d, struct expr *init_expr, struct expr *e, struct expr *next_expr, struct stmt *body, struct stmt *else_body ){
 	struct stmt *s = malloc(sizeof(*s));
@@ -47,9 +46,9 @@ void stmt_print(struct stmt *s, int indent){
 			case STMT_FOR:
 				printf("for (");
 				if (s->init_expr) expr_print(s->init_expr);
-				printf(" ; ");
+				printf(";");
 				if (s->expr) expr_print(s->expr);
-				printf(" ; ");
+				printf(";");
 				if (s->next_expr) expr_print(s->next_expr);
 				printf(")\n");
 				for (i = 0; i < indent; i++) printf("\t");
@@ -82,4 +81,20 @@ void stmt_print(struct stmt *s, int indent){
 		}
 	}
 	if (s->next) stmt_print(s->next, indent);
+}
+
+void stmt_resolve( struct stmt *s){
+	if (s){
+		if (s->kind == STMT_BLOCK)
+			scope_enter();
+		decl_resolve(s->decl);
+		expr_resolve(s->init_expr);
+		expr_resolve(s->expr);
+		expr_resolve(s->next_expr);
+		stmt_resolve(s->body);
+		stmt_resolve(s->else_body);
+		stmt_resolve(s->next);
+		if (s->kind == STMT_BLOCK)
+			scope_exit();
+	}
 }

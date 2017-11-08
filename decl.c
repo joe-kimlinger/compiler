@@ -1,8 +1,4 @@
 #include "decl.h"
-#include "type.h"
-#include "expr.h"
-#include "stmt.h"
-#include <stdlib.h>
 
 struct decl * decl_create( char *name, struct type *t, struct expr *v, struct stmt *c, struct decl *next ){
 	struct decl *d = malloc(sizeof(*d));
@@ -37,4 +33,22 @@ void decl_print(struct decl *d, int indent){
 		printf("\n");
 	}
 	if (d->next) decl_print(d->next, indent);
+}
+
+void decl_resolve( struct decl *d){
+	if(!d) return;
+	symbol_t kind = scope_level() > 1 ?
+		SYMBOL_LOCAL : SYMBOL_GLOBAL;
+	d->symbol = symbol_create(kind,d->type,d->name);
+	scope_bind(d->name,d->symbol);
+	if(d->value) {
+		expr_resolve(d->value);
+	}
+	if(d->code) {
+		scope_enter();
+		param_list_resolve(d->type->params);
+		stmt_resolve(d->code);
+		scope_exit();
+	}
+	decl_resolve(d->next);
 }
