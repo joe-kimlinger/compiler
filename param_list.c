@@ -31,6 +31,46 @@ struct param_list *param_list_copy(struct param_list *a){
 	if (!a) return 0;
 	struct param_list *n = malloc(sizeof(struct param_list));
 	n->name = strdup(a->name);
-	if (a->symbol){
-		n->symbol = malloc(
+	n->type = type_copy(a->type);
+	n->symbol = a->symbol;
+	n->next = param_list_copy(a->next);
+	return n;
+}
+
+int param_list_equals(struct param_list *l, struct param_list *r){
+	if (!l && !r) return 1;
+	if (!l || !r) return 0;
+	if (type_equals(l->type, r->type) && param_list_equals(l->next, r->next))
+		return 1;
+	return 0;
+}
+
+void param_list_delete(struct param_list *l){
+	if (!l) return;
+	param_list_delete(l->next);
+	free(l->name);
+	type_delete(l->type);
+	free(l);
+}
+
+int param_list_typecheck(struct param_list *p, struct expr *a){
+	if (!p && !a) return 1;
+	if (!p) {
+		printf("type error: too many arguments in function ");
+		return 0;
+	}
+	if (!a){
+		printf("type error: too few arguments in function ");
+		return 0;
+	}
+	if (p->type == expr_typecheck(a->left)){
+		return param_list_typecheck(p->next, a->right);
+	} else {
+		printf("type error: parameter ");
+		expr_print(a->left);
+		printf(" is not of type ");
+		type_print(p->type);
+		printf(" in call to function ");
+		return 0;
+	}
 }

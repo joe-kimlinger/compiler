@@ -245,7 +245,7 @@ stmt2		: TOKEN_IF TOKEN_LPAREN expr TOKEN_RPAREN stmt
 			;
 
 stmt3		: TOKEN_LCURLY stmt stmt_list TOKEN_RCURLY
-				{ $2->next = $3; $$ = $2; }
+				{ $2->next = $3; $$ = stmt_create(STMT_BLOCK, 0, 0, 0, 0, $2, 0); }
 			| expr TOKEN_SEMICOLON
 				{ $$ = stmt_create(STMT_EXPR, 0, 0, $1, 0, 0, 0); }
 			| TOKEN_RETURN opt_expr TOKEN_SEMICOLON

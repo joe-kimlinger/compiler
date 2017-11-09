@@ -74,8 +74,8 @@ void stmt_print(struct stmt *s, int indent){
 				break;
 
 			case STMT_BLOCK:
+				stmt_print(s->body, indent + 1);
 				break;
-
 			default:
 				break;
 		}
@@ -96,5 +96,80 @@ void stmt_resolve( struct stmt *s){
 		stmt_resolve(s->next);
 		if (s->kind == STMT_BLOCK)
 			scope_exit();
+	}
+}
+
+void stmt_typecheck( struct stmt *s )
+{
+	struct type *t;
+	struct expr *e;
+	struct expr *et;
+	switch(s->kind) {
+		case STMT_EXPR:
+			t = expr_typecheck(s->expr);
+			type_delete(t);
+			break;
+		case STMT_IF_ELSE:
+			t = expr_typecheck(s->expr);
+			if(t->kind!=TYPE_BOOLEAN) {
+				printf("type error: expecting boolean in if statement conditional, got ");
+				type_print(t);
+				printf(" (");
+				expr_print(s->expr);
+				printf(")\n");
+			}
+			type_delete(t);
+			stmt_typecheck(s->body);
+			stmt_typecheck(s->else_body);
+			break;
+		case STMT_DECL:
+			decl_typecheck(s->decl);
+			break;
+		case STMT_FOR:
+			t = expr_typecheck(s->init_expr);
+			type_delete(t);
+			t = expr_typecheck(s->expr);
+			if (t->kind != TYPE_BOOLEAN){
+				printf("type error: expecting boolean in for loop conditional, got ");
+				type_print(t);
+				printf(" (");
+				expr_print(s->expr);
+				printf(")\n");
+			}
+			t = expr_typecheck(s->next_expr);
+			type_delete(t);
+			stmt_typecheck(s->body);
+			break;
+		case STMT_PRINT:
+			e = s->expr;
+			while (e && e->left){
+				if (e->left)
+					et = e->left;
+				else
+					et = e;
+				t = expr_typecheck(et);
+				switch (t->kind){
+					case TYPE_FUNCTION:
+						printf("type error: cannot print function %s\n", et->name);
+						break;
+					case TYPE_ARRAY:
+						printf("type error: cannot print array %s\n", et->name);
+						break;
+					case TYPE_VOID:
+						printf("type error: cannot print void\n");
+						break;
+					default:
+						break;
+				}
+				e = e->right;
+			}
+			break;
+		case STMT_RETURN:
+			break;
+		case STMT_BLOCK:
+			stmt_typecheck(s->body);
+			break;
+		default:
+			break;
 	}
 }

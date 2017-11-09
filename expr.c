@@ -246,30 +246,43 @@ void expr_resolve( struct expr *e )
 	}
 }
 
-struct expr * expr_typecheck( struct expr *e )
+struct expr *expr_copy( struct expr *e){
+	if (!e) return 0;
+	struct expr *n = malloc(sizeof(struct expr));
+	n->left = expr_copy(e->left);
+	n->right = expr_copy(e->right);
+	n->kind = e->kind;
+	n->name = strdup(e->name);
+	n->symbol = symbol_copy(e->symbol);
+	n->literal_value = e->literal_value;
+	n->string_literal = strdup(e->string_literal);
+	return n;
+
+}
+
+struct type * expr_typecheck( struct expr *e )
 {
-	if(!e) return;
+	if(!e) return 0;
+	struct expr *l;
+	struct exor *r;
 	struct type *lt = expr_typecheck(e->left);
 	struct type *rt = expr_typecheck(e->right);
 	struct type *result;
 	switch(e->kind) {
-		case EXPR_INTEGER_LITERAL:
-			result = type_create(TYPE_INTEGER,0,0);
+		case EXPR_INT_LITERAL:
+			result = type_create(TYPE_INTEGER,0,0,0);
 			break;
 		case EXPR_STRING_LITERAL:
-			result = type_create(TYPE_STRING,0,0);
+			result = type_create(TYPE_STRING,0,0,0);
 			break;
 		case EXPR_BOOLEAN_LITERAL:
-			result = type_create(TYPE_BOOLEAN,0,0);
+			result = type_create(TYPE_BOOLEAN,0,0,0);
 			break;
 		case EXPR_CHAR_LITERAL:
-			result = type_create(TYPE_CHARACTER,0,0);
-			break;
-		case EXPR_VOID:
-			result = type_create(TYPE_VOID,0,0);
+			result = type_create(TYPE_CHARACTER,0,0,0);
 			break;
 		case EXPR_ADD:
-			if (lt->kind != TYPE_INTEGER || rt->kind = TYPE_INTEGER){
+			if (lt->kind != TYPE_INTEGER || rt->kind != TYPE_INTEGER){
 				printf("type error: cannot add ");
 				type_print(lt);
 				printf(" (");
@@ -280,10 +293,10 @@ struct expr * expr_typecheck( struct expr *e )
 				expr_print(e->right);
 				printf(")\n");
 			}
-			result = type_create(TYPE_INTEGER, 0, 0);
+			result = type_create(TYPE_INTEGER,0,0,0);
 			break;
 		case EXPR_SUB:
-			if (lt->kind != TYPE_INTEGER || rt->kind = TYPE_INTEGER){
+			if (lt->kind != TYPE_INTEGER || rt->kind != TYPE_INTEGER){
 				printf("type error: cannot subtract ");
 				type_print(lt);
 				printf(" (");
@@ -294,10 +307,10 @@ struct expr * expr_typecheck( struct expr *e )
 				expr_print(e->right);
 				printf(")\n");
 			}
-			result = type_create(TYPE_INTEGER, 0, 0);
+			result = type_create(TYPE_INTEGER, 0, 0,0);
 			break;
-		case EXPR_MULT:
-			if (lt->kind != TYPE_INTEGER || rt->kind = TYPE_INTEGER){
+		case EXPR_MUL:
+			if (lt->kind != TYPE_INTEGER || rt->kind != TYPE_INTEGER){
 				printf("type error: cannot multiply ");
 				type_print(lt);
 				printf(" (");
@@ -308,10 +321,10 @@ struct expr * expr_typecheck( struct expr *e )
 				expr_print(e->right);
 				printf(")\n");
 			}
-			result = type_create(TYPE_INTEGER, 0, 0);
+			result = type_create(TYPE_INTEGER, 0, 0,0);
 			break;
-		case EXPR_DIVIDE:
-			if (lt->kind != TYPE_INTEGER || rt->kind = TYPE_INTEGER){
+		case EXPR_DIV:
+			if (lt->kind != TYPE_INTEGER || rt->kind != TYPE_INTEGER){
 				printf("type error: cannot divide ");
 				type_print(lt);
 				printf(" (");
@@ -322,10 +335,10 @@ struct expr * expr_typecheck( struct expr *e )
 				expr_print(e->right);
 				printf(")\n");
 			}
-			result = type_create(TYPE_INTEGER, 0, 0);
+			result = type_create(TYPE_INTEGER, 0, 0,0);
 			break;
 		case EXPR_MOD:
-			if (lt->kind != TYPE_INTEGER || rt->kind = TYPE_INTEGER){
+			if (lt->kind != TYPE_INTEGER || rt->kind != TYPE_INTEGER){
 				printf("type error: cannot mod ");
 				type_print(lt);
 				printf(" (");
@@ -336,7 +349,7 @@ struct expr * expr_typecheck( struct expr *e )
 				expr_print(e->right);
 				printf(")\n");
 			}
-			result = type_create(TYPE_INTEGER, 0, 0);
+			result = type_create(TYPE_INTEGER, 0, 0,0);
 			break;
 		case EXPR_ASSIGN:
 			if (!type_equals(lt, rt)){
@@ -350,7 +363,7 @@ struct expr * expr_typecheck( struct expr *e )
 				expr_print(e->right);
 				printf(")\n");
 			}
-			result = type_create(lt->kind, 0, 0);
+			result = type_create(lt->kind, 0, 0,0);
 			break;
 		case EXPR_OR:
 			if (lt->kind != TYPE_BOOLEAN || rt->kind != TYPE_BOOLEAN){
@@ -364,7 +377,7 @@ struct expr * expr_typecheck( struct expr *e )
 				expr_print(e->right);
 				printf(")\n");
 			}
-			result = type_create(TYPE_BOOLEAN, 0, 0);
+			result = type_create(TYPE_BOOLEAN, 0, 0,0);
 			break;
 		case EXPR_AND:
 			if (lt->kind != TYPE_BOOLEAN || rt->kind != TYPE_BOOLEAN){
@@ -378,7 +391,7 @@ struct expr * expr_typecheck( struct expr *e )
 				expr_print(e->right);
 				printf(")\n");
 			}
-			result = type_create(TYPE_BOOLEAN, 0, 0);
+			result = type_create(TYPE_BOOLEAN, 0, 0,0);
 			break;
 		case EXPR_LT:
 			if (lt->kind != TYPE_INTEGER || rt->kind != TYPE_INTEGER){
@@ -392,7 +405,7 @@ struct expr * expr_typecheck( struct expr *e )
 				expr_print(e->right);
 				printf(")\n");
 			}
-			result = type_create(TYPE_INTEGER, 0, 0);
+			result = type_create(TYPE_INTEGER, 0, 0,0);
 			break;
 		case EXPR_GT:
 			if (lt->kind != TYPE_INTEGER || rt->kind != TYPE_INTEGER){
@@ -406,7 +419,7 @@ struct expr * expr_typecheck( struct expr *e )
 				expr_print(e->right);
 				printf(")\n");
 			}
-			result = type_create(TYPE_INTEGER, 0, 0);
+			result = type_create(TYPE_INTEGER, 0, 0,0);
 			break;
 		case EXPR_GE:
 			if (lt->kind != TYPE_INTEGER || rt->kind != TYPE_INTEGER){
@@ -420,7 +433,7 @@ struct expr * expr_typecheck( struct expr *e )
 				expr_print(e->right);
 				printf(")\n");
 			}
-			result = type_create(TYPE_INTEGER, 0, 0);
+			result = type_create(TYPE_INTEGER, 0, 0,0);
 			break;
 		case EXPR_LE:
 			if (lt->kind != TYPE_INTEGER || rt->kind != TYPE_INTEGER){
@@ -434,7 +447,7 @@ struct expr * expr_typecheck( struct expr *e )
 				expr_print(e->right);
 				printf(")\n");
 			}
-			result = type_create(TYPE_INTEGER, 0, 0);
+			result = type_create(TYPE_INTEGER, 0, 0,0);
 			break;
 		case EXPR_EQ:
 			if (lt->kind != TYPE_INTEGER || rt->kind != TYPE_INTEGER){
@@ -448,7 +461,7 @@ struct expr * expr_typecheck( struct expr *e )
 				expr_print(e->right);
 				printf(")\n");
 			}
-			result = type_create(TYPE_INTEGER, 0, 0);
+			result = type_create(TYPE_INTEGER, 0, 0,0);
 			break;
 		case EXPR_NE:
 			if (lt->kind != TYPE_INTEGER || rt->kind != TYPE_INTEGER){
@@ -462,7 +475,111 @@ struct expr * expr_typecheck( struct expr *e )
 				expr_print(e->right);
 				printf(")\n");
 			}
-			result = type_create(TYPE_INTEGER, 0, 0);
+			result = type_create(TYPE_INTEGER, 0, 0,0);
 			break;
+		case EXPR_FCALL:
+			if (lt->kind != TYPE_FUNCTION){
+				printf("type error: cannot call ");
+				type_print(lt);
+				printf(" (");
+				expr_print(e->left);
+				printf("): not a function\n");
+			}
+			if (!param_list_typecheck(lt->params, e->right)){
+				expr_print(e->left);
+				printf("\n");
+			}
+			if (lt->subtype)
+				result = type_create(lt->subtype->kind,0,0,0);
+			else
+				result = type_create(lt->kind,0,0,0);
+			break;
+		case EXPR_ARG:
+			result = 0;
+			break;
+		case EXPR_SUBSCRIPT:
+			r = e->right;
+			while (r->right){
+				if (lt->kind != TYPE_ARRAY){
+					printf("type error: cannot index ");
+					type_print(lt);
+					printf(" (");
+					expr_print(e->left);
+					printf("): not an array\n");
+				}
+				r = r->right;
+				lt = expr_typecheck(e->right)
+			}
+
+			if (lt->subtype)
+				result = type_create(lt->subtype->kind,0,0,0);
+			else
+				result = type_create(lt->kind,0,0,0);
+			break;
+		case EXPR_BRACKET_LIST:
+
+		case EXPR_PARENS:
+			result = lt;
+			break;
+		case EXPR_EXPONENT:
+			if (lt->kind != TYPE_INTEGER || rt->kind != TYPE_INTEGER){
+				printf("type error: cannot raise ");
+				type_print(lt);
+				printf(" (");
+				expr_print(e->left);
+				printf(") to the power of ");
+				type_print(rt);
+				printf(" (");
+				expr_print(e->right);
+				printf(")\n");
+			}
+			result = type_create(TYPE_INTEGER,0,0,0);
+			break;
+		case EXPR_NEGATION:
+			if (lt->kind != TYPE_BOOLEAN){
+				printf("type error: cannot negate ");
+				type_print(lt);
+				printf(" (");
+				expr_print(e->left);
+				printf(")\n");
+			}
+			result = type_create(TYPE_BOOLEAN,0,0,0);
+			break;
+		case EXPR_NEGATIVE:
+			if (lt->kind != TYPE_INTEGER){
+				printf("type error: cannot make ");
+				type_print(lt);
+				printf(" (");
+				expr_print(e->left);
+				printf(") negative\n");
+			}
+			result = type_create(TYPE_INTEGER,0,0,0);
+			break;
+		case EXPR_INCREMENT:
+			if (lt->kind != TYPE_INTEGER){
+				printf("type error: cannot increment ");
+				type_print(lt);
+				printf(" (");
+				expr_print(e->left);
+				printf(")\n");
+			}
+			result = type_create(TYPE_INTEGER,0,0,0);
+			break;
+		case EXPR_DECREMENT:
+			if (lt->kind != TYPE_INTEGER){
+				printf("type error: cannot decrement ");
+				type_print(lt);
+				printf(" (");
+				expr_print(e->left);
+				printf(")\n");
+			}
+			result = type_create(TYPE_INTEGER,0,0,0);
+			break;
+		case EXPR_NAME:
+			result = type_copy(e->symbol->type);
+			break;
+
+ 
 	}
+	return result;
 }

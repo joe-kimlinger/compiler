@@ -49,17 +49,16 @@ int type_equals( struct type *a, struct type *b )
 	if( a->kind == b->kind ) {
 		if (a->kind == TYPE_ARRAY){
 			if (type_equals(a->subtype, b->subtype)){
-				return true;
+				return 1;
 			}
 		} else if (a->kind == TYPE_FUNCTION){
-			if (type_equals(a->subtype, b->subtype) && param_list_equals(a->param_list, b->param_list))
-				return true;
+			if (type_equals(a->subtype, b->subtype) && param_list_equals(a->params, b->params))
+				return 1;
 		} else {
-			return true;
+			return 1;
 		}
-	} else {
-		return false;
 	}
+	return 0;
 }
 
 struct type * type_copy( struct type *t )
@@ -67,12 +66,11 @@ struct type * type_copy( struct type *t )
 	if (!t) return 0;
 	struct type *n = malloc(sizeof(struct type));
 	n->subtype = type_copy(t->subtype);
-	n->param_list = param_list_copy(t->param_list);
+	n->params = param_list_copy(t->params);
 	n->kind = t->kind;
 
 	if (t->size){
-		n->size = malloc(sizeof(struct expr));
-		n->size = t->size;
+		n->size = expr_copy(t->size);
 	} else {
 		n->size = 0;
 	}
@@ -83,7 +81,7 @@ void type_delete( struct type *t )
 {
 	if (!t) return;
 	type_delete(t->subtype);
-	param_list_delete(t->param_list);
+	param_list_delete(t->params);
 	free(t->size);
 	free(t);
 }

@@ -52,3 +52,18 @@ void decl_resolve( struct decl *d){
 	}
 	decl_resolve(d->next);
 }
+
+void decl_typecheck( struct decl *d )
+{
+	struct type *t;
+	if( d->value ) {
+		t = expr_typecheck(d->value);
+		if(!type_equals(t,d->symbol->type)) {
+			/* display an error */
+		}
+	}
+	if(d->code) {
+		stmt_typecheck(d->code);
+	}
+}
+
