@@ -78,7 +78,7 @@ struct decl * parser_result = 0;
 %type <decl> program decl_list decl assign_decl
 %type <stmt> stmt stmt2 stmt3 stmt4 stmt_list
 %type <type> type
-%type <expr> expr expr2 expr3 expr4 expr5 expr6 expr7 expr8 expr9 expr10 expr11 opt_expr expr_list bracket_list
+%type <expr> expr expr2 expr3 expr4 expr5 expr6 expr7 expr8 expr9 expr10 expr11 opt_expr expr_list bracket_list expr_list2
 %type <param_list> param_list
 %type <name> ident
 
@@ -282,11 +282,15 @@ bracket_list: TOKEN_LBRACKET expr TOKEN_RBRACKET bracket_list
 				{ $$ = 0; }
 			;
 
-expr_list	: expr 
-				{ $$ = $1; }
-			| expr TOKEN_COMMA expr_list
-				{ $$ = expr_create(EXPR_ARG, $1, $3); }
+expr_list	: expr expr_list2
+				{ $$ = expr_create(EXPR_ARG, $1, $2); }
 			| 
+				{ $$ = 0; }
+			;
+
+expr_list2  : TOKEN_COMMA expr expr_list2
+				{ $$ = expr_create(EXPR_ARG, $2, $3); }
+			|
 				{ $$ = 0; }
 			;
 

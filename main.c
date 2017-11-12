@@ -9,6 +9,8 @@ extern int yylex();
 extern char *yytext;
 extern int yyparse();
 extern struct decl * parser_result;
+extern int resolve_result;
+extern int typecheck_result;
 
 
 int main(int argc, char* argv[]){
@@ -185,5 +187,12 @@ int main(int argc, char* argv[]){
 		decl_print(parser_result, 0);
 	} else{
 		decl_resolve(parser_result);
+		if (!resolve_result)
+			exit(1);
+	}
+	if (!strcmp(argv[1], "-typecheck")){
+		decl_typecheck(parser_result);
+		if (!typecheck_result)
+			exit(1);
 	}
 }

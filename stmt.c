@@ -1,4 +1,5 @@
 #include "stmt.h"
+extern int typecheck_result;
 
 struct stmt * stmt_create( stmt_kind_t kind, struct decl *d, struct expr *init_expr, struct expr *e, struct expr *next_expr, struct stmt *body, struct stmt *else_body ){
 	struct stmt *s = malloc(sizeof(*s));
@@ -29,15 +30,10 @@ void stmt_print(struct stmt *s, int indent){
 				printf("if (");
 				expr_print(s->expr);
 				printf(")\n");
-				for (i = 0; i < indent; i++) printf("\t");
-				printf("{\n");
-				stmt_print(s->body, indent + 1);
-				for (i = 0; i < indent; i++) printf("\t");
-				printf("}");
+				stmt_print(s->body, indent);
 				if (s->else_body){
 					printf(" else {\n");
 					stmt_print(s->else_body, indent + 1);
-					for (i = 0; i < indent; i++) printf("\t");
 					printf("}");
 				}
 				printf("\n");
@@ -74,7 +70,10 @@ void stmt_print(struct stmt *s, int indent){
 				break;
 
 			case STMT_BLOCK:
+				printf("{\n");
 				stmt_print(s->body, indent + 1);
+				for (i = 0; i < indent; i++) printf("\t");
+				printf("}\n");
 				break;
 			default:
 				break;
@@ -93,17 +92,24 @@ void stmt_resolve( struct stmt *s){
 		expr_resolve(s->next_expr);
 		stmt_resolve(s->body);
 		stmt_resolve(s->else_body);
-		stmt_resolve(s->next);
-		if (s->kind == STMT_BLOCK)
+		if (s->kind == STMT_BLOCK){
 			scope_exit();
+		}
+		stmt_resolve(s->next);
 	}
 }
 
 void stmt_typecheck( struct stmt *s )
 {
+	if (!s) return;
 	struct type *t;
 	struct expr *e;
-	struct expr *et;
+	if (s->body)
+		s->body->expect_return = s->expect_return;
+	if (s->next)
+		s->next->expect_return = s->expect_return;
+	if (s->else_body)
+		s->else_body->expect_return = s->expect_return;
 	switch(s->kind) {
 		case STMT_EXPR:
 			t = expr_typecheck(s->expr);
@@ -117,6 +123,7 @@ void stmt_typecheck( struct stmt *s )
 				printf(" (");
 				expr_print(s->expr);
 				printf(")\n");
+				typecheck_result = 0;
 			}
 			type_delete(t);
 			stmt_typecheck(s->body);
@@ -135,6 +142,7 @@ void stmt_typecheck( struct stmt *s )
 				printf(" (");
 				expr_print(s->expr);
 				printf(")\n");
+				typecheck_result = 0;
 			}
 			t = expr_typecheck(s->next_expr);
 			type_delete(t);
@@ -142,21 +150,20 @@ void stmt_typecheck( struct stmt *s )
 			break;
 		case STMT_PRINT:
 			e = s->expr;
-			while (e && e->left){
-				if (e->left)
-					et = e->left;
-				else
-					et = e;
-				t = expr_typecheck(et);
+			while (e){
+				t = expr_typecheck(e->left);
 				switch (t->kind){
 					case TYPE_FUNCTION:
-						printf("type error: cannot print function %s\n", et->name);
+						printf("type error: cannot print function %s\n", e->left->name);
+						typecheck_result = 0;
 						break;
 					case TYPE_ARRAY:
-						printf("type error: cannot print array %s\n", et->name);
+						printf("type error: cannot print array %s\n", e->left->name);
+						typecheck_result = 0;
 						break;
 					case TYPE_VOID:
 						printf("type error: cannot print void\n");
+						typecheck_result = 0;
 						break;
 					default:
 						break;
@@ -165,6 +172,17 @@ void stmt_typecheck( struct stmt *s )
 			}
 			break;
 		case STMT_RETURN:
+			t = expr_typecheck(s->expr);
+			if (!type_equals(t, type_copy(s->expect_return))){
+				printf("type error: expected return of type ");
+				type_print(s->expect_return);
+				printf(" but instead got ");
+				type_print(expr_typecheck(s->expr));
+				printf(" (");
+				expr_print(s->expr);
+				printf(")\n");
+				typecheck_result = 0;
+			}
 			break;
 		case STMT_BLOCK:
 			stmt_typecheck(s->body);
@@ -172,4 +190,5 @@ void stmt_typecheck( struct stmt *s )
 		default:
 			break;
 	}
+	stmt_typecheck(s->next);
 }

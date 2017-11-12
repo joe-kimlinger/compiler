@@ -1,4 +1,5 @@
 #include "decl.h"
+extern int typecheck_result;
 
 struct decl * decl_create( char *name, struct type *t, struct expr *v, struct stmt *c, struct decl *next ){
 	struct decl *d = malloc(sizeof(*d));
@@ -40,7 +41,18 @@ void decl_resolve( struct decl *d){
 	symbol_t kind = scope_level() > 1 ?
 		SYMBOL_LOCAL : SYMBOL_GLOBAL;
 	d->symbol = symbol_create(kind,d->type,d->name);
-	scope_bind(d->name,d->symbol);
+
+	struct symbol *temp = scope_lookup_current(d->name);
+	if (temp){
+		if (d->type->kind != TYPE_FUNCTION || !type_equals(d->type, temp->type)){
+			printf("resolve error: %s was already declared in this scope\n", d->name);
+			resolve_result = 0;
+		} else {
+			d->symbol = scope_lookup_current(d->name);
+		}
+	} else {
+		scope_bind(d->name, d->symbol);
+	}
 	if(d->value) {
 		expr_resolve(d->value);
 	}
@@ -55,15 +67,53 @@ void decl_resolve( struct decl *d){
 
 void decl_typecheck( struct decl *d )
 {
+	if (!d) return;
 	struct type *t;
 	if( d->value ) {
 		t = expr_typecheck(d->value);
-		if(!type_equals(t,d->symbol->type)) {
-			/* display an error */
+		if (d->symbol->type->kind == TYPE_ARRAY){
+			printf("%d\n", t->size->literal_value);
+			if (!type_equals(t, d->symbol->type->subtype)){
+				printf("type error: array initializer (");
+				expr_print(d->value);
+				printf(") does not match type ");
+				type_print(d->symbol->type);
+				printf("\n");
+				typecheck_result = 0;
+			} else if (d->type->size->kind != EXPR_INT_LITERAL){
+				printf("type error: ");
+				type_print(d->type);
+				printf(" (");
+				expr_print(d->value);
+				printf(") must have constant size, not ");
+				expr_print(d->type->size);
+				printf("\n");
+				typecheck_result = 0;
+			} else if (d->type->size->literal_value != t->size->literal_value){
+				printf("type error: array initializer ");
+				printf(" (");
+				expr_print(d->value);
+				printf(") does not match array size of ");
+				expr_print(d->type->size);
+				printf("\n");
+				typecheck_result = 0;
+
+			}
+		} else if(!type_equals(t,d->symbol->type)) {
+			printf("type error: value ");
+			type_print(t);
+			printf(" (");
+			expr_print(d->value);
+			printf(") does not match variable declared as type ");
+			type_print(d->symbol->type);
+			printf("\n");
+			typecheck_result = 0;
 		}
 	}
 	if(d->code) {
+		d->code->expect_return = d->symbol->type->subtype;
 		stmt_typecheck(d->code);
 	}
+	decl_typecheck(d->next);
 }
 

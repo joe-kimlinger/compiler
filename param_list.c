@@ -63,8 +63,10 @@ int param_list_typecheck(struct param_list *p, struct expr *a){
 		printf("type error: too few arguments in function ");
 		return 0;
 	}
-	if (p->type == expr_typecheck(a->left)){
+	if (a->right && type_equals(p->type, expr_typecheck(a->left))){
 		return param_list_typecheck(p->next, a->right);
+	} else if (!a->right && type_equals(p->type, expr_typecheck(a))){
+		return 1; 
 	} else {
 		printf("type error: parameter ");
 		expr_print(a->left);

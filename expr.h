@@ -64,4 +64,5 @@ void expr_resolve( struct expr *e);
 struct type *expr_typecheck( struct expr *e);
 struct expr *expr_copy( struct expr *e);
 
+extern int resolve_result;
 #endif

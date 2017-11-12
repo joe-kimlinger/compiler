@@ -10,6 +10,7 @@ struct type * type_create( type_kind_t kind, struct param_list *params, struct t
 }
 
 void type_print(struct type *t){
+	if (!t) return;
 	switch(t->kind){
 		case TYPE_BOOLEAN:
 			printf("boolean");
@@ -46,6 +47,8 @@ void type_print(struct type *t){
 
 int type_equals( struct type *a, struct type *b )
 {
+	if (!a && !b) return 1;
+	if (!a || !b) return 0;
 	if( a->kind == b->kind ) {
 		if (a->kind == TYPE_ARRAY){
 			if (type_equals(a->subtype, b->subtype)){
@@ -68,12 +71,8 @@ struct type * type_copy( struct type *t )
 	n->subtype = type_copy(t->subtype);
 	n->params = param_list_copy(t->params);
 	n->kind = t->kind;
+	n->size = expr_copy(t->size);
 
-	if (t->size){
-		n->size = expr_copy(t->size);
-	} else {
-		n->size = 0;
-	}
 	return n;
 }
 
