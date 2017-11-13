@@ -1,6 +1,8 @@
-x: integer = 5;
-s: string = "hello";
-a: array [6] integer;
-f: function integer() = {
-	return 5;
+f : function void() = {
+    x : integer = 1;
+    {
+        print x;
+        x : integer = x + 1;
+        print x;
+    }
 }

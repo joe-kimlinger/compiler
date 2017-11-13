@@ -14,6 +14,7 @@ struct stmt * stmt_create( stmt_kind_t kind, struct decl *d, struct expr *init_e
 }
 
 void stmt_print(struct stmt *s, int indent){
+	if (!s) return;
 	if (s->decl){
 	   decl_print(s->decl, indent);
 	} else {
@@ -30,10 +31,15 @@ void stmt_print(struct stmt *s, int indent){
 				printf("if (");
 				expr_print(s->expr);
 				printf(")\n");
-				stmt_print(s->body, indent);
+				for (i = 0; i < indent; i++) printf("\t");
+				printf("{\n");
+				stmt_print(s->body->body, indent + 1);
+				for (i = 0; i < indent; i++) printf("\t");
+				printf("}");
 				if (s->else_body){
 					printf(" else {\n");
 					stmt_print(s->else_body, indent + 1);
+					for (i = 0; i < indent; i++) printf("\t");
 					printf("}");
 				}
 				printf("\n");

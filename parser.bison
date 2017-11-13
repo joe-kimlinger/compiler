@@ -208,8 +208,8 @@ expr10		: ident expr11
 				{ $$ = expr_create_boolean_literal(0); }
 			| TOKEN_FALSE
 				{ $$ = expr_create_boolean_literal(1); }
-			| TOKEN_LCURLY expr_list TOKEN_RCURLY
-				{ $$ = expr_create(EXPR_ARRAY_INIT, $2, 0); }
+			| TOKEN_LCURLY expr expr_list2 TOKEN_RCURLY
+				{ $$ = expr_create(EXPR_ARRAY_INIT, 0, expr_create(EXPR_ARG, $2, $3)); }
 			| TOKEN_LPAREN expr TOKEN_RPAREN
 				{ $$ = expr_create(EXPR_PARENS, $2, 0); }
 			;
@@ -244,8 +244,8 @@ stmt2		: TOKEN_IF TOKEN_LPAREN expr TOKEN_RPAREN stmt
 				{ $$ = stmt_create(STMT_IF_ELSE, 0, 0, $3, 0, $5, $7); }
 			;
 
-stmt3		: TOKEN_LCURLY stmt stmt_list TOKEN_RCURLY
-				{ $2->next = $3; $$ = stmt_create(STMT_BLOCK, 0, 0, 0, 0, $2, 0); }
+stmt3		: TOKEN_LCURLY stmt_list TOKEN_RCURLY
+				{ $$ = stmt_create(STMT_BLOCK, 0, 0, 0, 0, $2, 0); }
 			| expr TOKEN_SEMICOLON
 				{ $$ = stmt_create(STMT_EXPR, 0, 0, $1, 0, 0, 0); }
 			| TOKEN_RETURN opt_expr TOKEN_SEMICOLON

@@ -1,4 +1,9 @@
-int main(int argc, char* argv){
-	print "???????";
-
-}
+x: integer = 6;
+y: integer = 4;
+z: integer = x + y;
+b: boolean = true;
+r: boolean = b;
+s: string = "hey there";
+t: string = s;
+c: char = 'f';
+d: char = c;

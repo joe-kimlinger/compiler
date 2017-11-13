@@ -1,6 +1,24 @@
-main:function void(x:integer) = {
-	print "Hello ", x;
-	f(b, a, d);
-	f(1, 2, 3);
-	f(a[1], true);
+// test functions with invocations and prototypes
+test1:function integer (a:integer);
+test2:function boolean (a:integer);
+test3:function string (a:integer);
+test1:function integer (a:integer);
+
+main:function void ()=
+{
+	x:integer = test1(5);
+	test2(5);
+	print test3(7);
+}
+test1:function integer (a:integer)=
+{
+	return a;
+}
+test2:function boolean (a:integer)=
+{
+	return true;
+}
+test3:function string (a:integer)=
+{
+	return "hello world";
 }

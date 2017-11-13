@@ -1,5 +1,9 @@
-f: function void()={
-	if ('h' == 'p')
-		return;
+// redeclaration of x in scope
+main: function integer () = {
+	x: integer = 1;
+	
+	if(1 < 2)
+		x:integer = 2;
+	
+	print x;
 }
-print "Outside of declaration";

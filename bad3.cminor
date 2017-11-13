@@ -1,5 +1,11 @@
-f: function void() = {
-	x: string = "hi";
-	b: boolean = false;
-	;
+// We can't assign functions
+f: function integer() = {
+	return 1;
+}
+x: function integer() = {
+	return 0;
+}
+main: function void() = {
+	f = x;
+	return;
 }

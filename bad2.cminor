@@ -1,9 +1,8 @@
-f: function void() = {
-	for (i = 0; ; i++){
-		"here";
-	}
-	for (int j = 0; j < 2; j++){
-		"not here";
-	}
-
+//Unequal array sizes on assignemnt and initialization
+a: array [5] integer = {5, 4, 3, 2, 1};
+x: array [3] boolean = {true, false, true};
+y: array [5] boolean;
+main: function void() = {
+	y = x;
+	return;
 }

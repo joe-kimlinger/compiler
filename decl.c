@@ -38,6 +38,10 @@ void decl_print(struct decl *d, int indent){
 
 void decl_resolve( struct decl *d){
 	if(!d) return;
+	if(d->value) {
+		expr_resolve(d->value);
+	}
+
 	symbol_t kind = scope_level() > 1 ?
 		SYMBOL_LOCAL : SYMBOL_GLOBAL;
 	d->symbol = symbol_create(kind,d->type,d->name);
@@ -52,9 +56,6 @@ void decl_resolve( struct decl *d){
 		}
 	} else {
 		scope_bind(d->name, d->symbol);
-	}
-	if(d->value) {
-		expr_resolve(d->value);
 	}
 	if(d->code) {
 		scope_enter();
@@ -71,16 +72,15 @@ void decl_typecheck( struct decl *d )
 	struct type *t;
 	if( d->value ) {
 		t = expr_typecheck(d->value);
+
 		if (d->symbol->type->kind == TYPE_ARRAY){
-			printf("%d\n", t->size->literal_value);
-			if (!type_equals(t, d->symbol->type->subtype)){
-				printf("type error: array initializer (");
-				expr_print(d->value);
-				printf(") does not match type ");
+			if (!type_equals(t, d->symbol->type)){
+				printf("type error: array initializer for (%s) does not match type ", d->name);
 				type_print(d->symbol->type);
 				printf("\n");
 				typecheck_result = 0;
-			} else if (d->type->size->kind != EXPR_INT_LITERAL){
+			} 
+			if (d->type->size->kind != EXPR_INT_LITERAL){
 				printf("type error: ");
 				type_print(d->type);
 				printf(" (");
@@ -89,25 +89,40 @@ void decl_typecheck( struct decl *d )
 				expr_print(d->type->size);
 				printf("\n");
 				typecheck_result = 0;
-			} else if (d->type->size->literal_value != t->size->literal_value){
-				printf("type error: array initializer ");
-				printf(" (");
-				expr_print(d->value);
-				printf(") does not match array size of ");
+			} 
+			if (d->type->size->literal_value != t->size->literal_value){
+				printf("type error: array initializer for (%s) does not match array size of ", d->name); 
 				expr_print(d->type->size);
 				printf("\n");
 				typecheck_result = 0;
 
 			}
-		} else if(!type_equals(t,d->symbol->type)) {
-			printf("type error: value ");
-			type_print(t);
-			printf(" (");
-			expr_print(d->value);
-			printf(") does not match variable declared as type ");
-			type_print(d->symbol->type);
-			printf("\n");
-			typecheck_result = 0;
+		} else {
+		   	if(!type_equals(t,d->symbol->type)) {
+				printf("type error: value ");
+				type_print(t);
+				printf(" (");
+				expr_print(d->value);
+				printf(") does not match variable declared as type ");
+				type_print(d->symbol->type);
+				printf("\n");
+				typecheck_result = 0;
+			}
+			if(d->symbol->kind == SYMBOL_GLOBAL){
+			   if ((d->symbol->type->kind == TYPE_BOOLEAN \
+						   && d->value->kind != EXPR_BOOLEAN_LITERAL) \
+					   || (d->symbol->type->kind == TYPE_INTEGER \
+						   && d->value->kind != EXPR_INT_LITERAL) \
+					   || (d->symbol->type->kind == TYPE_CHARACTER \
+						   && d->value->kind != EXPR_CHAR_LITERAL) \
+					   || (d->symbol->type->kind == TYPE_STRING \
+						   && d->value->kind != EXPR_STRING_LITERAL)){
+					printf("type error: global ");
+					type_print(d->symbol->type);
+					printf(" (%s) must be intitialized as constant\n", d->name);
+					typecheck_result = 0;
+				}
+			}
 		}
 	}
 	if(d->code) {
