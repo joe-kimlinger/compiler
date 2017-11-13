@@ -1,0 +1,6 @@
+main: function void() = {
+	a: function void() = {
+		x: string = "This should not be possible";
+		print x, true, false;
+	}
+}

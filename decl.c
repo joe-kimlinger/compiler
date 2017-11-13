@@ -55,14 +55,26 @@ void decl_resolve( struct decl *d){
 			d->symbol = scope_lookup_current(d->name);
 		}
 	} else {
-		scope_bind(d->name, d->symbol);
+		if (d->type->kind == TYPE_FUNCTION && d->symbol->kind != SYMBOL_GLOBAL){
+			printf("resolve error: function (%s) must be declared at global scope\n", d->name);
+			resolve_result = 0;
+		} else {
+			scope_bind(d->name, d->symbol);
+		}
 	}
 	if(d->code) {
-		scope_enter();
-		param_list_resolve(d->type->params);
-		stmt_resolve(d->code);
-		scope_exit();
+		if (temp && temp->type->size){
+			printf("resolve error: %s was already declared in this scope\n", d->name);
+			resolve_result = 0;
+		} else {
+			scope_enter();
+			param_list_resolve(d->type->params);
+			stmt_resolve(d->code);
+			scope_exit();
+			d->type->size = expr_create_integer_literal(1);
+		}
 	}
+
 	decl_resolve(d->next);
 }
 
@@ -74,28 +86,40 @@ void decl_typecheck( struct decl *d )
 		t = expr_typecheck(d->value);
 
 		if (d->symbol->type->kind == TYPE_ARRAY){
+			// cannot initialize local arrays
+			if (d->symbol->kind != SYMBOL_GLOBAL){
+				printf("type error: array initilaizers cannot be used for local variables ");
+				type_print(d->symbol->type);
+				printf(" (%s)\n", d->name);
+				typecheck_result = 0;
+			}
+			// Does initializer have right values
 			if (!type_equals(t, d->symbol->type)){
 				printf("type error: array initializer for (%s) does not match type ", d->name);
 				type_print(d->symbol->type);
 				printf("\n");
 				typecheck_result = 0;
 			} 
-			if (d->type->size->kind != EXPR_INT_LITERAL){
-				printf("type error: ");
-				type_print(d->type);
-				printf(" (");
-				expr_print(d->value);
-				printf(") must have constant size, not ");
-				expr_print(d->type->size);
-				printf("\n");
-				typecheck_result = 0;
-			} 
-			if (d->type->size->literal_value != t->size->literal_value){
-				printf("type error: array initializer for (%s) does not match array size of ", d->name); 
-				expr_print(d->type->size);
-				printf("\n");
-				typecheck_result = 0;
+			if (d->type->size){
+				// Is size constant
+				if (d->type->size->kind != EXPR_INT_LITERAL){
+					printf("type error: ");
+					type_print(d->type);
+					printf(" (");
+					expr_print(d->value);
+					printf(") must have constant size, not ");
+					expr_print(d->type->size);
+					printf("\n");
+					typecheck_result = 0;
+				} 
+				// Is size equal to initializer
+				if (d->type->size->literal_value != t->size->literal_value){
+					printf("type error: array initializer for (%s) does not match array size of ", d->name); 
+					expr_print(d->type->size);
+					printf("\n");
+					typecheck_result = 0;
 
+				}
 			}
 		} else {
 		   	if(!type_equals(t,d->symbol->type)) {
@@ -111,8 +135,6 @@ void decl_typecheck( struct decl *d )
 			if(d->symbol->kind == SYMBOL_GLOBAL){
 			   if ((d->symbol->type->kind == TYPE_BOOLEAN \
 						   && d->value->kind != EXPR_BOOLEAN_LITERAL) \
-					   || (d->symbol->type->kind == TYPE_INTEGER \
-						   && d->value->kind != EXPR_INT_LITERAL) \
 					   || (d->symbol->type->kind == TYPE_CHARACTER \
 						   && d->value->kind != EXPR_CHAR_LITERAL) \
 					   || (d->symbol->type->kind == TYPE_STRING \
@@ -121,8 +143,45 @@ void decl_typecheck( struct decl *d )
 					type_print(d->symbol->type);
 					printf(" (%s) must be intitialized as constant\n", d->name);
 					typecheck_result = 0;
+				} else if (d->symbol->type->kind == TYPE_INTEGER){
+					if (d->value->kind == EXPR_NEGATIVE){
+						if (d->value->left->kind != EXPR_INT_LITERAL){
+							printf("type error: global ");
+							type_print(d->symbol->type);
+							printf(" (%s) must be intitialized as constant\n", d->name);
+							typecheck_result = 0;
+						}
+					} else if (d->value->kind != EXPR_INT_LITERAL){
+							printf("type error: global ");
+							type_print(d->symbol->type);
+							printf(" (%s) must be intitialized as constant\n", d->name);
+							typecheck_result = 0;
+						}
 				}
 			}
+		}
+	} else if (d->symbol->type->kind == TYPE_ARRAY){
+		if (!d->type->size){
+			printf("type error: ");
+			type_print(d->type);
+			printf(" (%s) must have size or initilizer\n", d->name);
+			typecheck_result = 0;
+		}
+	} else if (d->symbol->type->kind == TYPE_FUNCTION){
+		struct param_list *p = d->symbol->type->params;
+		while (p){
+			if (p->type->kind == TYPE_ARRAY){
+				t = p->type->subtype;
+				while (t->kind == TYPE_ARRAY){
+					if (!t->size){
+						printf("type error: function parameter ");
+						type_print(p->type);
+						printf(" (%s) must have a size for multi-dimensions\n", p->name);
+					}
+					t = t->subtype;
+				}
+			}
+			p = p->next;
 		}
 	}
 	if(d->code) {

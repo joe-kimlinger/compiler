@@ -1,3 +1,2 @@
-s: string = "strng";
-d: 5 char;
-
+a: array [] integer = {1, 2, 3, 4};
+b: array [] boolean;

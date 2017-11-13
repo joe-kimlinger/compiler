@@ -1,3 +1,13 @@
-c: char = '\0';
-f: function void() =
-	print "here";
+// We cannot have multiple defenitions of a function
+test1:function integer (a:integer)=
+{
+	return a;
+}
+test1:function integer (a:integer)=
+{
+	return a + 5;
+}
+test1:function integer (a:integer)=
+{
+	return a + 5 * 2;
+}

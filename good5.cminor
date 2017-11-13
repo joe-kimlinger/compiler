@@ -1,11 +1,11 @@
-f: function void() = {
-	for (;;){
-		if (i == 2)
-			if (j < k)
-				if (1)
-					return 1;
-				else
-					return 0;
+main: function void (i: integer) = {
+	for (i = 0; true; i++){
+		s: string = "infinite loop....";
+		print s;
+	}
+	s: string = "new scope, new string";
+	if (false){
+		s: string;
+		s = "hello";
 	}
 }
-

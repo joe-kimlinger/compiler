@@ -6,18 +6,15 @@ int typecheck_result = 1;
 
 void scope_enter(){
 	if (top){
-		struct scope_node *temp = scope_node_create(top, 0, top->level + 1);
-		top->next = temp;
-		//printf("Entering scope %d\n", temp->level);
-		top = temp;
+		top = scope_node_create(top, top->level + 1);
 	}
 }
 void scope_exit(){
 	if (top){
+		struct scope_node *temp = top;
 		hash_table_delete(top->table);
-		//printf("Leaving scope %d\n", top->level);
-		top = top->prev;
-		free(top->next);
+		top = top->next;
+		free(temp);
 	}
 }
 int scope_level(){
@@ -29,7 +26,7 @@ int scope_level(){
 
 void scope_bind( const char *name, struct symbol *sym){
 	if (!top){
-		top = scope_node_create(0, 0, 1);
+		top = scope_node_create(0, 1);
 	}
 	if (hash_table_insert(top->table, name, sym)){
 		sym->which = top->var_count;
@@ -46,7 +43,7 @@ struct symbol * scope_lookup( const char *name ){
 		if ((temp = hash_table_lookup(curr->table, name)))
 			return temp;
 		else
-			curr = curr->prev;
+			curr = curr->next;
 	}
 	
 	return 0;
@@ -59,12 +56,11 @@ struct symbol * scope_lookup_current( const char *name ){
 		return 0;
 }
 
-struct scope_node * scope_node_create(struct scope_node *p, struct scope_node *n, int level){
+struct scope_node * scope_node_create(struct scope_node *n, int level){
 	struct scope_node *s = malloc(sizeof(struct scope_node));
 	s->table = hash_table_create(0, 0);
 	s->var_count = 0;
 	s->level = level;
-	s->prev = p;
 	s->next = n;
 	return s;
 }

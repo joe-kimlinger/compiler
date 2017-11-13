@@ -1,4 +1,3 @@
-
 %{
 #include "tokens.h"
 char* string_clean(char*);

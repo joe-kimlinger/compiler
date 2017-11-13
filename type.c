@@ -52,8 +52,16 @@ int type_equals( struct type *a, struct type *b )
 	if (!a || !b) return 0;
 	if( a->kind == b->kind ) {
 		if (a->kind == TYPE_ARRAY){
-			if (type_equals(a->subtype, b->subtype) && a->size->literal_value == b->size->literal_value){
-				return 1;
+			if (type_equals(a->subtype, b->subtype)){ 
+				if (a->size && b->size){
+					if (a->size->literal_value == b->size->literal_value){
+						return 1;
+					} else {
+						return 0;
+					}
+				} else{
+					return 1;
+				}
 			}
 		} else if (a->kind == TYPE_FUNCTION){
 			if (type_equals(a->subtype, b->subtype) && param_list_equals(a->params, b->params))
