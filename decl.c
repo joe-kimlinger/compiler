@@ -87,7 +87,7 @@ void decl_typecheck( struct decl *d )
 
 		if (d->symbol->type->kind == TYPE_ARRAY){
 			// cannot initialize local arrays
-			if (d->symbol->kind != SYMBOL_GLOBAL){
+			if (d->symbol->kind != SYMBOL_GLOBAL && d->value->kind == EXPR_ARRAY_INIT){
 				printf("type error: array initilaizers cannot be used for local variables ");
 				type_print(d->symbol->type);
 				printf(" (%s)\n", d->name);
@@ -120,6 +120,8 @@ void decl_typecheck( struct decl *d )
 					typecheck_result = 0;
 
 				}
+			} else {
+				d->type->size = expr_create_integer_literal(t->size->literal_value);
 			}
 		} else {
 		   	if(!type_equals(t,d->symbol->type)) {

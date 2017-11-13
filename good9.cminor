@@ -1,9 +1,13 @@
+//array stuff
+a: array [] integer = {5, 4, 3, 2, 1};
+b: array [5] integer;
+c: array [5] array [5] array [5] integer;
+
 main: function void() = {
-	if (x || y && y || z && 5 == 2)
-		if (4 >= 2 && 3 <= 1 && 1 != 2)
-			print ":)";
-		else
-			print":(";
-	else
-		print ":/";
+	z: array [5] integer = a;
+	a[3] = 4;
+	b = a;
+	c[1][1] = a;
+	b = c[2][4];
+	print c[0][1][a[3]], b[c[2][3][4]];
 }

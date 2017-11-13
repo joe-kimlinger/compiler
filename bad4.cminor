@@ -14,8 +14,10 @@ main: function integer () = {
 		x = 2;
 	else if (a || b)
 		x = 5;
-	else
+	else if (x)
 		x = 7;
+	else
+		x = 0;
 	
 	print x;
 }

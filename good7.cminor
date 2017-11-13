@@ -1,6 +1,15 @@
-main: function void() = {
-	a[1][2][3][5] = 4;
-	for(i = 0; i < 5; i++){
-		b[i + 1] = 5 % 3;
+x: string = "hello";
+
+main: function void () = {
+	s: string = x;
+	{
+		s: integer = 0;
+		r: integer = s;
+		x: boolean = true;
 	}
+	s = "This should work";
+	x = s;
+	print;
+	return;
+	
 }

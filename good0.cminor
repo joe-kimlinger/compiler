@@ -1,0 +1,16 @@
+// Arithetic operators
+main: function integer () = {
+	a: integer = 0;
+	b: integer = 1;
+	c: integer = 2;
+	d: integer = 3;
+	
+	return a + 2;
+	return a - c;
+	return b * d;
+	return d / c;
+	return a % b;
+	return 2 ^ b;
+	return a++;
+	return b--;
+}

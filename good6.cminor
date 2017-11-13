@@ -1,6 +1,13 @@
-b: boolean = true;
-main: function void (a: boolean, t: integer) = {
-	print "My boolean is ", b, " and my int is ", t;
-	return;
+// Recursion
+fib: function integer (x: integer);
+
+main: function integer () = {
+	print fib(6);
 }
-empty: function void() = {}
+
+fib: function integer (x: integer) = {
+	if (x <= 1)
+		return x;
+
+	return x + fib(x - 1);
+}
