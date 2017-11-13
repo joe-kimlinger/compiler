@@ -123,75 +123,75 @@ type		: TOKEN_INTEGER
 			;
 
 expr		: expr TOKEN_ASSIGN expr2
-				{ $$ = expr_create(EXPR_ASSIGN, $1, $3); }
+				{ $$ = expr_create(EXPR_ASSIGN, $1, $3, 0); }
 			| expr2
 				{ $$ = $1; }
 			;
 
 expr2		: expr2 TOKEN_OR expr3
-				{ $$ = expr_create(EXPR_OR, $1, $3); }
+				{ $$ = expr_create(EXPR_OR, $1, $3, 1); }
 			| expr3
 				{ $$ = $1; }
 			;
 
 expr3		: expr3 TOKEN_AND expr4
-				{ $$ = expr_create(EXPR_AND, $1, $3); }
+				{ $$ = expr_create(EXPR_AND, $1, $3, 2); }
 			| expr4
 				{ $$ = $1; }
 			;
 
 expr4		: expr4 TOKEN_LT expr5
-				{ $$ = expr_create(EXPR_LT, $1, $3); }
+				{ $$ = expr_create(EXPR_LT, $1, $3, 3); }
 			| expr4 TOKEN_GT expr5
-				{ $$ = expr_create(EXPR_GT, $1, $3); }
+				{ $$ = expr_create(EXPR_GT, $1, $3, 3); }
 			| expr4 TOKEN_GE expr5
-				{ $$ = expr_create(EXPR_GE, $1, $3); }
+				{ $$ = expr_create(EXPR_GE, $1, $3, 3); }
 			| expr4 TOKEN_LE expr5
-				{ $$ = expr_create(EXPR_LE, $1, $3); }
+				{ $$ = expr_create(EXPR_LE, $1, $3, 3); }
 			| expr4 TOKEN_EQ expr5
-				{ $$ = expr_create(EXPR_EQ, $1, $3); }
+				{ $$ = expr_create(EXPR_EQ, $1, $3, 3); }
 			| expr4 TOKEN_NE expr5
-				{ $$ = expr_create(EXPR_NE, $1, $3); }
+				{ $$ = expr_create(EXPR_NE, $1, $3, 3); }
 			| expr5
 				{ $$ = $1; }
 			;
 
 expr5		: expr5 TOKEN_PLUS expr6
-				{ $$ = expr_create(EXPR_ADD, $1, $3); }
+				{ $$ = expr_create(EXPR_ADD, $1, $3, 4); }
 			| expr5 TOKEN_MINUS expr6
-				{ $$ = expr_create(EXPR_SUB, $1, $3); }
+				{ $$ = expr_create(EXPR_SUB, $1, $3, 4); }
 			| expr6
 				{ $$ = $1; }
 			;
 
 expr6		: expr6 TOKEN_STAR expr7
-				{ $$ = expr_create(EXPR_MUL, $1, $3); }
+				{ $$ = expr_create(EXPR_MUL, $1, $3, 5); }
 			| expr6 TOKEN_SLASH expr7
-				{ $$ = expr_create(EXPR_DIV, $1, $3); }
+				{ $$ = expr_create(EXPR_DIV, $1, $3, 5); }
 			| expr6 TOKEN_MOD expr7
-				{ $$ = expr_create(EXPR_MOD, $1, $3); }
+				{ $$ = expr_create(EXPR_MOD, $1, $3, 5); }
 			| expr7
 				{ $$ = $1; }
 			;
 
 expr7		: expr7 TOKEN_EXPONENT expr8
-				{ $$ = expr_create(EXPR_EXPONENT, $1, $3); }
+				{ $$ = expr_create(EXPR_EXPONENT, $1, $3, 6); }
 			| expr8
 				{ $$ = $1; }
 			;
 
 expr8		: TOKEN_NEGATION expr9
-				{ $$ = expr_create(EXPR_NEGATION, $2, 0); }
+				{ $$ = expr_create(EXPR_NEGATION, $2, 0, 7); }
 			| TOKEN_MINUS expr9
-				{ $$ = expr_create(EXPR_NEGATIVE, $2, 0); }
+				{ $$ = expr_create(EXPR_NEGATIVE, $2, 0, 8); }
 			| expr9
 				{ $$ = $1; }
 			;
 
 expr9		: expr9 TOKEN_INCREMENT
-				{ $$ = expr_create(EXPR_INCREMENT, $1, 0); }
+				{ $$ = expr_create(EXPR_INCREMENT, $1, 0, 9); }
 			| expr9 TOKEN_DECREMENT
-				{ $$ = expr_create(EXPR_DECREMENT, $1, 0); }
+				{ $$ = expr_create(EXPR_DECREMENT, $1, 0, 9); }
 			| expr10
 				{ $$ = $1; }
 			;
@@ -209,17 +209,17 @@ expr10		: ident expr11
 			| TOKEN_FALSE
 				{ $$ = expr_create_boolean_literal(1); }
 			| TOKEN_LCURLY expr expr_list2 TOKEN_RCURLY
-				{ $$ = expr_create(EXPR_ARRAY_INIT, 0, expr_create(EXPR_ARG, $2, $3)); }
+				{ $$ = expr_create(EXPR_ARRAY_INIT, 0, expr_create(EXPR_ARG, $2, $3, 10), 10); }
 			| TOKEN_LPAREN expr TOKEN_RPAREN
-				{ $$ = expr_create(EXPR_PARENS, $2, 0); }
+				{ $$ = $2; }
 			;
 
 expr11		: TOKEN_LBRACKET expr TOKEN_RBRACKET bracket_list
-				{ $$ = expr_create(EXPR_SUBSCRIPT, 0, expr_create(EXPR_BRACKET_LIST, $2, $4)); }
+				{ $$ = expr_create(EXPR_SUBSCRIPT, 0, expr_create(EXPR_BRACKET_LIST, $2, $4, 10), 10); }
 			| TOKEN_LPAREN expr_list TOKEN_RPAREN
-				{ $$ = expr_create(EXPR_FCALL, 0, $2); }
+				{ $$ = expr_create(EXPR_FCALL, 0, $2, 10); }
 			|
-				{ $$ = expr_create(EXPR_NAME, 0, 0); }
+				{ $$ = expr_create(EXPR_NAME, 0, 0, 10); }
 			;
 
 opt_expr	: expr
@@ -277,19 +277,19 @@ param_list	: ident TOKEN_COLON type
 			;
 
 bracket_list: TOKEN_LBRACKET expr TOKEN_RBRACKET bracket_list
-				{ $$ = expr_create(EXPR_BRACKET_LIST, $2, $4); }
+				{ $$ = expr_create(EXPR_BRACKET_LIST, $2, $4, 10); }
 			| 
 				{ $$ = 0; }
 			;
 
 expr_list	: expr expr_list2
-				{ $$ = expr_create(EXPR_ARG, $1, $2); }
+				{ $$ = expr_create(EXPR_ARG, $1, $2, 10); }
 			| 
 				{ $$ = 0; }
 			;
 
 expr_list2  : TOKEN_COMMA expr expr_list2
-				{ $$ = expr_create(EXPR_ARG, $2, $3); }
+				{ $$ = expr_create(EXPR_ARG, $2, $3, 10); }
 			|
 				{ $$ = 0; }
 			;

@@ -24,7 +24,6 @@ typedef enum {
 	EXPR_BRACKET_LIST,
 	EXPR_FCALL,
 	EXPR_ARRAY_INIT,
-	EXPR_PARENS,
 	EXPR_EXPONENT,
 	EXPR_NEGATION,
 	EXPR_NEGATIVE,
@@ -49,9 +48,10 @@ struct expr {
 	struct symbol *symbol;
 	int literal_value;
 	char * string_literal;
+	int precedence;
 };
 
-struct expr * expr_create( expr_t kind, struct expr *left, struct expr *right );
+struct expr * expr_create( expr_t kind, struct expr *left, struct expr *right, int precedence);
 
 struct expr * expr_create_name( const char *n );
 struct expr * expr_create_boolean_literal( int c );

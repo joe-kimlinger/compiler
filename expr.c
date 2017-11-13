@@ -1,11 +1,12 @@
 #include "expr.h"
 extern int typecheck_result;
 
-struct expr * expr_create( expr_t kind, struct expr *left, struct expr *right ){
+struct expr * expr_create( expr_t kind, struct expr *left, struct expr *right, int p){
 	struct expr* e = malloc(sizeof(*e));
 	e->kind = kind;
 	e->left = left;
 	e->right = right;
+	e->precedence = p;
 	return e;
 }
 
@@ -15,6 +16,7 @@ struct expr * expr_create_name( const char *n ){
 	e->right = 0;
 	e->left = 0;
 	e->name = n;
+	e->precedence = 100;
 	return e;
 }
 
@@ -24,6 +26,7 @@ struct expr * expr_create_boolean_literal( int c ){
 	e->right = 0;
 	e->left = 0;
 	e->literal_value = c;
+	e->precedence = 100;
 	return e;
 }
 
@@ -33,6 +36,7 @@ struct expr * expr_create_integer_literal( int c ){
 	e->right = 0;
 	e->left = 0;
 	e->literal_value = c;
+	e->precedence = 100;
 	return e;
 }
 
@@ -42,6 +46,7 @@ struct expr * expr_create_character_literal( int c ){
 	e->right = 0;
 	e->left = 0;
 	e->literal_value = c;
+	e->precedence = 100;
 	return e;
 }
 
@@ -51,6 +56,7 @@ struct expr * expr_create_string_literal( char *str ){
 	e->right = 0;
 	e->left = 0;
 	e->string_literal = str;
+	e->precedence = 100;
 	return e;
 }
 
@@ -59,88 +65,199 @@ void expr_print(struct expr *e){
 	if (!e) return;
 	switch(e->kind){
 		case EXPR_ADD:
+			if (e->left->precedence < e->precedence)
+				printf("(");
 			expr_print(e->left);
+			if (e->left->precedence < e->precedence)
+				printf(")");
 			printf("+");
+			if (e->right->precedence < e->precedence)
+				printf("(");
 			expr_print(e->right);
+			if (e->right->precedence < e->precedence)
+				printf(")");
 			break;
 		case EXPR_SUB:
+			if (e->left->precedence < e->precedence)
+				printf("(");
 			expr_print(e->left);
+			if (e->left->precedence < e->precedence)
+				printf(")");
 			printf("-");
+			if (e->right->precedence < e->precedence)
+				printf("(");
 			expr_print(e->right);
+			if (e->right->precedence < e->precedence)
+				printf(")");
 			break;
 		case EXPR_MUL:
+			if (e->left->precedence < e->precedence)
+				printf("(");
 			expr_print(e->left);
+			if (e->left->precedence < e->precedence)
+				printf(")");
 			printf("*");
+			if (e->right->precedence < e->precedence)
+				printf("(");
 			expr_print(e->right);
+			if (e->right->precedence < e->precedence)
+				printf(")");
 			break;
 		case EXPR_DIV:
+			if (e->left->precedence < e->precedence)
+				printf("(");
 			expr_print(e->left);
+			if (e->left->precedence < e->precedence)
+				printf(")");
 			printf("/");
+			if (e->right->precedence < e->precedence)
+				printf("(");
 			expr_print(e->right);
+			if (e->right->precedence < e->precedence)
+				printf(")");
 			break;
 		case EXPR_MOD:
+			if (e->left->precedence < e->precedence)
+				printf("(");
 			expr_print(e->left);
+			if (e->left->precedence < e->precedence)
+				printf(")");
 			printf("%%");
+			if (e->right->precedence < e->precedence)
+				printf("(");
 			expr_print(e->right);
+			if (e->right->precedence < e->precedence)
+				printf(")");
 			break;
 		case EXPR_EXPONENT:
+			if (e->left->precedence < e->precedence)
+				printf("(");
 			expr_print(e->left);
+			if (e->left->precedence < e->precedence)
+				printf(")");
 			printf("^");
+			if (e->right->precedence < e->precedence)
+				printf("(");
 			expr_print(e->right);
+			if (e->right->precedence < e->precedence)
+				printf(")");
 			break;
 		case EXPR_ASSIGN:
+			if (e->left->precedence < e->precedence)
+				printf("(");
 			expr_print(e->left);
+			if (e->left->precedence < e->precedence)
+				printf(")");
 			printf("=");
+			if (e->right->precedence < e->precedence)
+				printf("(");
 			expr_print(e->right);
+			if (e->right->precedence < e->precedence)
+				printf(")");
 			break;
 		case EXPR_OR:
+			if (e->left->precedence < e->precedence)
+				printf("(");
 			expr_print(e->left);
+			if (e->left->precedence < e->precedence)
+				printf(")");
 			printf("||");
+			if (e->right->precedence < e->precedence)
+				printf("(");
 			expr_print(e->right);
+			if (e->right->precedence < e->precedence)
+				printf(")");
 			break;
 		case EXPR_AND:
+			if (e->left->precedence < e->precedence)
+				printf("(");
 			expr_print(e->left);
+			if (e->left->precedence < e->precedence)
+				printf(")");
 			printf("&&");
+			if (e->right->precedence < e->precedence)
+				printf("(");
 			expr_print(e->right);
+			if (e->right->precedence < e->precedence)
+				printf(")");
 			break;
 		case EXPR_LT:
+			if (e->left->precedence < e->precedence)
+				printf("(");
 			expr_print(e->left);
+			if (e->left->precedence < e->precedence)
+				printf(")");
 			printf("<");
+			if (e->right->precedence < e->precedence)
+				printf("(");
 			expr_print(e->right);
+			if (e->right->precedence < e->precedence)
+				printf(")");
 			break;
 		case EXPR_GT:
+			if (e->left->precedence < e->precedence)
+				printf("(");
 			expr_print(e->left);
+			if (e->left->precedence < e->precedence)
+				printf(")");
 			printf(">");
+			if (e->right->precedence < e->precedence)
+				printf("(");
 			expr_print(e->right);
+			if (e->right->precedence < e->precedence)
+				printf(")");
 			break;
 		case EXPR_GE:
+			if (e->left->precedence < e->precedence)
+				printf("(");
 			expr_print(e->left);
+			if (e->left->precedence < e->precedence)
+				printf(")");
 			printf(">=");
+			if (e->right->precedence < e->precedence)
+				printf("(");
 			expr_print(e->right);
+			if (e->right->precedence < e->precedence)
+				printf(")");
 			break;
 		case EXPR_LE:
+			if (e->left->precedence < e->precedence)
+				printf("(");
 			expr_print(e->left);
+			if (e->left->precedence < e->precedence)
+				printf(")");
 			printf("<=");
+			if (e->right->precedence < e->precedence)
+				printf("(");
 			expr_print(e->right);
+			if (e->right->precedence < e->precedence)
+				printf(")");
 			break;
 		case EXPR_EQ:
+			if (e->left->precedence < e->precedence)
+				printf("(");
 			expr_print(e->left);
+			if (e->left->precedence < e->precedence)
+				printf(")");
 			printf("==");
+			if (e->right->precedence < e->precedence)
+				printf("(");
 			expr_print(e->right);
+			if (e->right->precedence < e->precedence)
+				printf(")");
 			break;
 		case EXPR_NE:
-			expr_print(e->left);
-			printf("!=");
-			expr_print(e->right);
-			break;
-		case EXPR_PARENS:
-			if (e->left && e->left->kind != EXPR_PARENS){
+			if (e->left->precedence < e->precedence)
 				printf("(");
-				expr_print(e->left);
+			expr_print(e->left);
+			if (e->left->precedence < e->precedence)
 				printf(")");
-			} else {
-				expr_print(e->left);
-			}
+			printf("!=");
+			if (e->right->precedence < e->precedence)
+				printf("(");
+			expr_print(e->right);
+			if (e->right->precedence < e->precedence)
+				printf(")");
 			break;
 		case EXPR_SUBSCRIPT:
 			expr_print(e->left);
@@ -151,6 +268,7 @@ void expr_print(struct expr *e){
 			expr_print(e->left);
 			printf("]");
 			expr_print(e->right);
+			break;
 			break;
 		case EXPR_FCALL:
 			expr_print(e->left);
@@ -167,18 +285,34 @@ void expr_print(struct expr *e){
 			break;
 		case EXPR_NEGATION:
 			printf("!");
+			if (e->left->precedence < e->precedence)
+				printf("(");
 			expr_print(e->left);
+			if (e->left->precedence < e->precedence)
+				printf(")");
 			break;
 		case EXPR_NEGATIVE:
-			printf("(-");
+			printf("-");
+			if (e->left->precedence < e->precedence)
+				printf("(");
 			expr_print(e->left);
-			printf(")");
+			if (e->left->precedence < e->precedence)
+				printf(")");
 			break;
 		case EXPR_INCREMENT:
+			if (e->left->precedence < e->precedence)
+				printf("(");
 			expr_print(e->left);
+			if (e->left->precedence < e->precedence)
+				printf(")");
 			printf("++");
 			break;
 		case EXPR_DECREMENT:
+			if (e->left->precedence < e->precedence)
+				printf("(");
+			expr_print(e->left);
+			if (e->left->precedence < e->precedence)
+				printf(")");
 			expr_print(e->left);
 			printf("++");
 			break;
@@ -579,9 +713,6 @@ struct type * expr_typecheck( struct expr *e )
 			result = type_copy(lt->subtype);
 			break;
 		case EXPR_BRACKET_LIST:
-			break;
-		case EXPR_PARENS:
-			result = lt;
 			break;
 		case EXPR_EXPONENT:
 			if (lt->kind != TYPE_INTEGER || rt->kind != TYPE_INTEGER){
