@@ -20,6 +20,7 @@ struct type {
 	struct param_list *params;
 	struct type *subtype;
 	struct expr *size;
+	char* func_name;
 };
 
 struct type * type_create( type_kind_t kind, struct param_list *params, struct type *subtype , struct expr *size);

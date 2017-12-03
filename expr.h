@@ -2,6 +2,8 @@
 #define EXPR_H
 
 #include "scope.h"
+#include "scratch.h"
+#include "label.h"
 #include <stdlib.h>
 #include "symbol.h"
 
@@ -49,6 +51,7 @@ struct expr {
 	int literal_value;
 	char * string_literal;
 	int precedence;
+	int reg;
 };
 
 struct expr * expr_create( expr_t kind, struct expr *left, struct expr *right, int precedence);
@@ -58,6 +61,7 @@ struct expr * expr_create_boolean_literal( int c );
 struct expr * expr_create_integer_literal( int c );
 struct expr * expr_create_character_literal( int c );
 struct expr * expr_create_string_literal( char *str );
+void expr_codegen (struct expr *e);
 
 void expr_print( struct expr *e );
 void expr_resolve( struct expr *e);

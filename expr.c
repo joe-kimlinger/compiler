@@ -60,8 +60,20 @@ struct expr * expr_create_string_literal( char *str ){
 	return e;
 }
 
+void string_literal_print(char *s){
+	char *c = s;
+	printf("\"");
+	while (*c){
+		if (*c == '\n')
+			printf("\\n");
+		else
+			printf("%c", *c);
+		c++;
+	}
+	printf("\"");
+}
+
 void expr_print(struct expr *e){
-	char *c;
 	if (!e) return;
 	switch(e->kind){
 		case EXPR_INT_LITERAL:
@@ -80,16 +92,7 @@ void expr_print(struct expr *e){
 				printf("false");
 			return;
 		case EXPR_STRING_LITERAL:
-		    c = e->string_literal;
-			printf("\"");
-			while (*c){
-				if (*c == '\n')
-					printf("\\n");
-				else
-					printf("%c", *c);
-				c++;
-			}
-			printf("\"");
+			string_literal_print(e->string_literal);
 			return;
 		case EXPR_NAME:
 			printf("%s", e->name);
@@ -615,4 +618,323 @@ struct type * expr_typecheck( struct expr *e )
  
 	}
 	return result;
+}
+
+void compare_codegen(struct expr *e, const char* s){
+	expr_codegen(e->left);
+	expr_codegen(e->right);
+	int lbl_1 = label_create();
+	int lbl_2 = label_create();
+	printf("\tCMPQ %s, %s\n",
+			scratch_name(e->right->reg),
+			scratch_name(e->left->reg));
+	printf("\t%s %s\n",
+			s,
+			label_name(lbl_1));
+	printf("\tMOVQ $0, %s\n",
+			scratch_name(e->right->reg));
+	printf("\tJMP %s\n",
+			label_name(lbl_2));
+	printf("%s:\n",
+			label_name(lbl_1));
+	printf("\tMOVQ $1, %s\n",
+			scratch_name(e->right->reg));
+	printf("%s:\n",
+			label_name(lbl_2));
+	e->reg = e->right->reg;
+	scratch_free(e->left->reg);
+
+}
+
+void expr_codegen( struct expr *e )
+{
+	if(!e) return;
+	struct expr *temp;
+	int i = 0;
+	switch(e->kind) {
+		// Leaf node: allocate reg and load value.
+		case EXPR_INT_LITERAL:
+			e->reg = scratch_alloc();
+			printf("\tMOVQ $%d, %s\n", 
+					e->literal_value, 
+					scratch_name(e->reg));
+			break;
+		case EXPR_STRING_LITERAL:
+			e->reg = scratch_alloc();
+			printf("\t.data\n");
+			i = label_create();
+			printf("%s:\n", 
+					label_name(i));
+			printf("\t.string ");
+			string_literal_print(e->string_literal);
+			printf("\n");
+			printf("\t.text\n");
+			printf("\tLEAQ %s, %s\n",
+					label_name(i),
+					scratch_name(e->reg));
+			break;
+		case EXPR_BOOLEAN_LITERAL:
+			e->reg = scratch_alloc();
+			printf("\tMOVQ $%d, %s\n", 
+					e->literal_value, 
+					scratch_name(e->reg));
+			 break;
+		case EXPR_CHAR_LITERAL:
+			e->reg = scratch_alloc();
+			printf("\tMOVQ $%d, %s\n", 
+					e->literal_value, 
+					scratch_name(e->reg));
+			break;
+		case EXPR_ADD:
+			expr_codegen(e->left);
+			expr_codegen(e->right);
+			printf("\tADDQ %s, %s\n",
+					scratch_name(e->left->reg),
+					scratch_name(e->right->reg));
+			e->reg = e->right->reg;
+			scratch_free(e->left->reg);
+			break;
+		case EXPR_SUB:
+			expr_codegen(e->left);
+			expr_codegen(e->right);
+			printf("\tSUBQ %s, %s\n",
+					scratch_name(e->left->reg),
+					scratch_name(e->right->reg));
+			e->reg = e->right->reg;
+			scratch_free(e->left->reg);
+			break;
+		case EXPR_MUL:
+			expr_codegen(e->left);
+			expr_codegen(e->right);
+			printf("\tMOVQ %s, %%rax\n", 
+					scratch_name(e->left->reg));
+			printf("\tIMULQ %s\n", 
+					scratch_name(e->right->reg));
+			printf("\tMOVQ %%rax, %s\n", 
+					scratch_name(e->right->reg));
+			e->reg = e->right->reg;
+			scratch_free(e->left->reg);
+			break;
+		case EXPR_DIV:
+			expr_codegen(e->left);
+			expr_codegen(e->right);
+			printf("\tMOVQ %s, %%rax\n", scratch_name(e->left->reg));
+			printf("\tCDQ\n");
+			printf("\tIDIVQ %s\n", 
+					scratch_name(e->right->reg));
+			printf("\tMOVQ %%rax, %s\n", 
+					scratch_name(e->right->reg));
+			e->reg = e->right->reg;
+			scratch_free(e->left->reg);
+			break;
+		case EXPR_MOD:
+			expr_codegen(e->left);
+			expr_codegen(e->right);
+			printf("\tMOVQ %s, %%rax\n", 
+					scratch_name(e->left->reg));
+			printf("\tCDQ\n");
+			printf("\tIDIVQ %s\n", 
+					scratch_name(e->right->reg));
+			printf("\tMOVQ %%rdx, %s\n", 
+					scratch_name(e->right->reg));
+			e->reg = e->right->reg;
+			scratch_free(e->left->reg);
+			break;
+		case EXPR_ASSIGN:
+			expr_codegen(e->right);
+			printf("\tMOVQ %s, %s\n",
+					scratch_name(e->right->reg),
+					symbol_codegen(e->left->symbol));
+			e->reg = e->left->reg;
+			break;
+		case EXPR_OR:
+			expr_codegen(e->left);
+			expr_codegen(e->right);
+			printf("\tORQ %s, %s\n",
+					scratch_name(e->left->reg),
+					scratch_name(e->right->reg));
+			e->reg = e->right->reg;
+			scratch_free(e->left->reg);
+			break;
+		case EXPR_AND:
+			expr_codegen(e->left);
+			expr_codegen(e->right);
+			printf("\tANDQ %s, %s\n",
+					scratch_name(e->left->reg),
+					scratch_name(e->right->reg));
+			e->reg = e->right->reg;
+			scratch_free(e->left->reg);
+			break;
+		case EXPR_LT:
+			compare_codegen(e, "JL");
+			break;
+		case EXPR_GT:
+			compare_codegen(e, "JG");
+			break;
+		case EXPR_GE:
+			compare_codegen(e, "JGE");
+			break;
+		case EXPR_LE:
+			compare_codegen(e, "JLE");
+			break;
+		case EXPR_EQ:
+			compare_codegen(e, "JE");
+			break;
+		case EXPR_NE:
+			compare_codegen(e, "JNE");
+			break;
+		case EXPR_FCALL:
+			expr_codegen(e->right);
+			temp = e->right;
+			i = 0;
+			while (temp){
+				switch (i){
+					case 0:
+			    		printf("\tMOVQ %s, %%rdi\n",
+							scratch_name(temp->left->reg));
+						break;
+					case 1:
+			    		printf("\tMOVQ %s, %%rsi\n",
+							scratch_name(temp->left->reg));
+						break;
+					case 2:
+			    		printf("\tMOVQ %s, %%rdx\n",
+							scratch_name(temp->left->reg));
+						break;
+					case 3:
+			    		printf("\tMOVQ %s, %%rcx\n",
+							scratch_name(temp->left->reg));
+						break;
+					case 4:
+			    		printf("\tMOVQ %s, %%r8\n",
+							scratch_name(temp->left->reg));
+						break;
+					case 5:
+			    		printf("\tMOVQ %s, %%r9\n",
+							scratch_name(temp->left->reg));
+
+						break;
+				}
+				scratch_free(temp->left->reg);
+				i++;
+				temp = temp->right;
+			}
+			printf("\tPUSHQ %%r10\n");
+			printf("\tPUSHQ %%r11\n");
+			scratch_push();
+			printf("\tCALL %s\n", e->left->name);
+			printf("\tPOPQ %%r11\n");
+			printf("\tPOPQ %%r10\n");
+			scratch_pop();
+			e->reg = scratch_alloc();
+			printf("\tMOVQ %%rax, %s\n",
+					scratch_name(e->reg));
+
+			break;
+		case EXPR_ARG:
+			expr_codegen(e->left);
+			expr_codegen(e->right);
+			break;
+		case EXPR_ARRAY_INIT:
+			temp = e->right;
+			while (temp){
+				printf("%d",
+						temp->left->literal_value);
+				temp = temp->right;
+				if (temp)
+					printf(", ");
+			}
+			break;
+		case EXPR_SUBSCRIPT:
+			expr_codegen(e->right);
+			i = scratch_alloc();
+			printf("\tLEAQ %s, %s\n",
+					symbol_codegen(e->left->symbol),
+					scratch_name(i));
+			printf("\tMOVQ (%s, %s, 8), %s\n",
+					scratch_name(i),
+					scratch_name(e->right->reg),
+					scratch_name(i));
+			e->reg = i;
+			scratch_free(e->right->reg);
+			break;
+		case EXPR_BRACKET_LIST:
+			expr_codegen(e->left);
+			if (e->right){
+				expr_codegen(e->right);
+				printf("\tMOVQ %s, %%rax\n", 
+						scratch_name(e->left->reg));
+				printf("\tIMULQ %s\n", 
+						scratch_name(e->right->reg));
+				printf("\tMOVQ %%rax, %s\n", 
+						scratch_name(e->left->reg));
+				scratch_free(e->right->reg);
+			}
+			e->reg = e->left->reg;
+			break;
+        case EXPR_EXPONENT:
+			expr_codegen(e->left);
+			expr_codegen(e->right);
+			printf("\tMOVQ %s, %%rdi\n",
+					scratch_name(e->left->reg));
+			printf("\tPUSHQ %%r10\n");
+			printf("\tPUSHQ %%r11\n");
+			scratch_push();
+			printf("\tCALL integer_power\n");
+			printf("\tPOPQ %%r11\n");
+			printf("\tPOPQ %%r10\n");
+			scratch_pop();
+			printf("\tMOVQ %%rax, %s\n",
+					scratch_name(e->left->reg));
+			e->reg = e->left->reg;
+			scratch_free(e->right->reg);
+			break;
+		case EXPR_NEGATION:
+			break;
+		case EXPR_NEGATIVE:
+			printf("\tNEG %s\n",
+					scratch_name(e->left->reg));
+			e->reg = e->left->reg;
+			break;
+		case EXPR_INCREMENT:
+			expr_codegen(e->left);
+			printf("\tINCQ %s\n",
+					scratch_name(e->left->reg));
+			e->reg = e->left->reg;
+			if (e->left->kind == EXPR_NAME){
+				printf("\tMOVQ %s, %s\n",
+						scratch_name(e->reg),
+						symbol_codegen(e->left->symbol));
+			} else {
+				printf("\tMOVQ %s, %s(%s)\n",
+						scratch_name(e->reg),
+						scratch_name(e->left->right->reg),
+						symbol_codegen(e->left->symbol));
+			}
+			break;
+		case EXPR_DECREMENT:
+			expr_codegen(e->left);
+			printf("\tDECQ %s\n",
+					scratch_name(e->left->reg));
+			e->reg = e->left->reg;
+			if (e->left->kind == EXPR_NAME){
+				printf("\tMOVQ %s, %s\n",
+						scratch_name(e->reg),
+						symbol_codegen(e->left->symbol));
+			} else {
+				printf("\tMOVQ %s, %s(%s)\n",
+						scratch_name(e->reg),
+						scratch_name(e->left->right->reg),
+						symbol_codegen(e->left->symbol));
+			}
+			break;
+		case EXPR_NAME:
+			if (e->symbol->type->kind != TYPE_FUNCTION){
+				e->reg = scratch_alloc();
+				printf("\tMOVQ %s, %s\n",
+						symbol_codegen(e->symbol),
+						scratch_name(e->reg));
+			}
+			break;
+	}
 }

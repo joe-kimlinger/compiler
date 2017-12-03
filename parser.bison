@@ -197,7 +197,9 @@ expr9		: expr9 TOKEN_INCREMENT
 			;
 
 expr10		: ident expr11
-				{ $2->left = expr_create_name($1); $2->name = $1; $$ = $2; }
+				{ $2->left = expr_create_name($1); $$ = $2; }
+			| ident
+				{ $$ = expr_create_name($1); }
 			| TOKEN_INT_LITERAL
 				{ $$ = expr_create_integer_literal(atoi(yytext)); }
 			| TOKEN_CHAR_LITERAL
@@ -218,8 +220,6 @@ expr11		: TOKEN_LBRACKET expr TOKEN_RBRACKET bracket_list
 				{ $$ = expr_create(EXPR_SUBSCRIPT, 0, expr_create(EXPR_BRACKET_LIST, $2, $4, 10), 10); }
 			| TOKEN_LPAREN expr_list TOKEN_RPAREN
 				{ $$ = expr_create(EXPR_FCALL, 0, $2, 10); }
-			|
-				{ $$ = expr_create(EXPR_NAME, 0, 0, 10); }
 			;
 
 opt_expr	: expr

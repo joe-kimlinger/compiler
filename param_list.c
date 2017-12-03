@@ -9,6 +9,11 @@ struct param_list * param_list_create( char *name, struct type *type, struct par
 	return p;
 }
 
+int param_list_length(struct param_list *p){
+	if (!p) return 0;
+	return 1 + param_list_length(p->next);
+}
+
 void param_list_print( struct param_list *a ){
 	if (!a) return;
 	printf("%s: ", a->name);
@@ -75,4 +80,8 @@ int param_list_typecheck(struct param_list *p, struct expr *a){
 		printf(" in call to function ");
 		return 0;
 	}
+}
+
+void param_list_codegen(struct param_list *p){
+	if (!p) return;
 }

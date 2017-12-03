@@ -91,7 +91,7 @@ void stmt_print(struct stmt *s, int indent){
 void stmt_resolve( struct stmt *s){
 	if (s){
 		if (s->kind == STMT_BLOCK)
-			scope_enter();
+			scope_enter_same_function();
 		decl_resolve(s->decl);
 		expr_resolve(s->init_expr);
 		expr_resolve(s->expr);
@@ -197,4 +197,100 @@ void stmt_typecheck( struct stmt *s )
 			break;
 	}
 	stmt_typecheck(s->next);
+}
+
+void stmt_codegen( struct stmt *s )
+{
+	if(!s) return;
+	struct expr *e;
+	struct type *t;
+	int else_label, done_label;
+	switch(s->kind) {
+		case STMT_EXPR:
+			expr_codegen(s->expr);
+			scratch_free(s->expr->reg);
+			break;
+		case STMT_DECL:
+			decl_codegen(s->decl);
+			break;
+		case STMT_RETURN:
+			expr_codegen(s->expr);
+			printf("\tMOV %s, %%rax\n",scratch_name(s->expr->reg));
+			printf("\tJMP %s_epilogue\n", s->expect_return->func_name);
+			scratch_free(s->expr->reg);
+			break;
+		case STMT_PRINT:
+			e = s->expr;
+			while (e){
+				expr_codegen(e->left);
+				t = expr_typecheck(e->left);
+				printf("\tMOVQ %s, %%rdi\n",
+					scratch_name(e->left->reg));
+				printf("\tPUSHQ %%r10\n");
+				printf("\tPUSHQ %%r11\n");
+				switch (t->kind){
+					case TYPE_BOOLEAN:
+						printf("\tCALL print_boolean\n");
+						break;
+					case TYPE_CHARACTER:
+						printf("\tCALL print_character\n");
+						break;
+					case TYPE_INTEGER:
+						printf("\tCALL print_integer\n");
+						break;
+					case TYPE_STRING:
+						printf("\tCALL print_string\n");
+						break;
+					default:
+						break;
+				}
+				printf("\tPOPQ %%r11\n");
+				printf("\tPOPQ %%r10\n");
+				e = e->right;
+			}
+			break;
+		case STMT_IF_ELSE:
+			else_label = label_create();
+			done_label = label_create();
+			expr_codegen(s->expr);
+			printf("\tCMPQ $0, %s\n",
+					scratch_name(s->expr->reg));
+			scratch_free(s->expr->reg);
+			printf("\tJE %s\n",
+					label_name(else_label));
+			stmt_codegen(s->body);
+			printf("\tJMP %s\n",
+					label_name(done_label));
+			printf("%s:\n",
+					label_name(else_label));
+			stmt_codegen(s->else_body);
+			printf("%s:\n",
+					label_name(done_label));
+			break;
+		case STMT_FOR:
+			else_label = label_create();
+			done_label = label_create();
+			expr_codegen(s->init_expr);
+			printf("%s:\n",
+					label_name(else_label));
+			expr_codegen(s->expr);
+			printf("\tCMPQ $0, %s\n",
+					scratch_name(s->expr->reg));
+			scratch_free(s->expr->reg);
+			printf("\tJE %s\n",
+					label_name(done_label));
+			stmt_codegen(s->body);
+			expr_codegen(s->next_expr);
+			printf("\tJMP %s\n",
+					label_name(else_label));
+			printf("%s:\n",
+					label_name(done_label));
+			break;
+		case STMT_BLOCK:
+			stmt_codegen(s->body);
+			break;
+		default:
+			break;
+	}
+	stmt_codegen(s->next);
 }

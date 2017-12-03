@@ -183,16 +183,29 @@ int main(int argc, char* argv[]){
 	if (yyparse()){
 		printf("Parse failed\n");
 		exit(1);
-	} else if (strcmp(argv[1], "-print") == 0){
+	} 
+	if (strcmp(argv[1], "-print") == 0){
 		decl_print(parser_result, 0);
-	} else{
-		decl_resolve(parser_result);
+		exit(0);
+	} 
+	decl_resolve(parser_result);
+	if (strcmp(argv[1], "-resolve") == 0){
 		if (!resolve_result)
 			exit(1);
+		else
+			exit(0);
 	}
-	if (!strcmp(argv[1], "-typecheck")){
-		decl_typecheck(parser_result);
+	decl_typecheck(parser_result);
+	if (strcmp(argv[1], "-typecheck") == 0){
 		if (!typecheck_result)
 			exit(1);
+		else
+			exit(0);
 	}
+	if (strcmp(argv[1], "-codegen") == 0){
+		if (argc == 4)
+			freopen(argv[3], "w", stdout);
+			
+	}
+	decl_codegen(parser_result);
 }

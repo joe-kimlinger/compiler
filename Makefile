@@ -3,11 +3,11 @@ CFLAGS=		-g -gdwarf-2 -Wall -std=gnu99
 LD=			gcc
 LDFLAGS=	-L.
 
-TARGETS=	cminor
+TARGETS=	cminor library.o
 
 all:		$(TARGETS)
 
-cminor:	parser.tab.o hash_table.o scanner.o main.o decl.o expr.o scope.o symbol.o param_list.o stmt.o type.o
+cminor:	parser.tab.o hash_table.o scanner.o main.o decl.o expr.o scope.o symbol.o param_list.o stmt.o type.o label.o scratch.o
 	$(LD) $(LDFLAGS) -o $@ $^
 
 parser.tab.c:	parser.bison
@@ -26,6 +26,15 @@ decl.o: decl.c decl.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 scope.o: scope.c scope.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+library.o: library.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+scratch.o: scratch.c scratch.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+label.o: label.c label.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 hash_table.o: hash_table.c hash_table.h

@@ -1,0 +1,20 @@
+D: function integer(x: integer) = {
+    d1: integer = x;
+    d2: integer = d1 + 1;
+    {
+        d3: integer = 9;
+        d2: integer = d2 + d1;
+        d4: integer = -1;
+        d2 = d2 + d3;
+    }
+    d4: integer = 16;
+    print d4 + 1;
+    {
+        d4: integer = -2;
+        d3: integer = 1000;
+        print d3 + 10;
+        print d4;
+    }
+    print d4;
+}
+

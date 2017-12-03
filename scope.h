@@ -4,6 +4,7 @@
 #include "hash_table.h"
 
 void scope_enter();
+void scope_enter_same_function();
 void scope_exit();
 int scope_level();
 void scope_bind( const char *name, struct symbol *sym);
@@ -14,6 +15,7 @@ struct scope_node * scope_node_create(struct scope_node *n, int level);
 struct scope_node{
 	int level;
 	int var_count;
+	int param_count;
 	struct hash_table *table;
 	struct scope_node *next;
 };

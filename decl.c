@@ -188,8 +188,144 @@ void decl_typecheck( struct decl *d )
 	}
 	if(d->code) {
 		d->code->expect_return = d->symbol->type->subtype;
+		d->code->expect_return->func_name = d->name;
 		stmt_typecheck(d->code);
 	}
 	decl_typecheck(d->next);
 }
 
+void decl_codegen( struct decl *d ){
+	if (!d) return;
+	int temp, i;
+	struct stmt *s;
+	if (d->symbol->kind == SYMBOL_GLOBAL){
+		switch (d->type->kind){
+			case TYPE_BOOLEAN:
+				printf(".data\n");
+				printf("%s:\n", d->name);
+				if (d->value){
+					printf("\t.quad %d\n",
+						d->value->literal_value);
+				} else {
+					printf("\t.quad 0\n");
+				}
+				break;
+			case TYPE_CHARACTER:
+				break;
+			case TYPE_INTEGER:
+				printf(".data\n");
+				printf("%s:\n", d->name);
+				if (d->value){
+					printf("\t.quad %d\n",
+						d->value->literal_value);
+				} else {
+					printf("\t.quad 0\n");
+				}
+				break;
+			case TYPE_STRING:
+				printf(".data\n");
+				printf("%s:\n",
+						d->name);
+				if (d->value){
+					printf("\t.string \"%s\"\n",
+						d->value->string_literal);
+				} else {
+					printf("\t.string \"\"\n");
+				}
+				break;
+			case TYPE_ARRAY:
+				printf(".data\n");
+				printf("%s:\n",
+						d->name);
+				if (d->value){
+					printf("\t.quad ");
+					expr_codegen(d->value);
+				} else {
+					printf("\t.quad ");
+					for (i = 0; i < d->type->size->literal_value; i++){
+						printf("0");
+						if (i < d->type->size->literal_value - 1)
+							printf(", ");
+					}
+				}
+				printf("\n");
+				break;
+			case TYPE_FUNCTION:
+				printf(".text\n");
+				printf(".globl %s\n",
+						d->name);
+				printf("%s:\n",
+						d->name);
+				// Save base pointer
+				printf("\tPUSHQ %%rbp\n");
+				printf("\tMOVQ %%rsp, %%rbp\n");
+				// Save arguments
+				temp = param_list_length(d->type->params);
+				if (temp > 6)
+					printf("Too many fucntion arguments to %s\n", d->name);
+				if (temp > 0)
+					printf("\tPUSHQ %%rdi\n");
+				if (temp > 1)
+					printf("\tPUSHQ %%rsi\n");
+				if (temp > 2)
+					printf("\tPUSHQ %%rdx\n");
+				if (temp > 3)
+					printf("\tPUSHQ %%rcx\n");
+				if (temp > 4)
+					printf("\tPUSHQ %%r8\n");
+				if (temp > 5)
+					printf("\tPUSHQ %%r9\n");
+
+				// Make room for locals
+				i = 0;
+				s = d->code;
+				while (s){
+					if (s->kind == STMT_DECL && s->decl->type->kind != TYPE_STRING){
+						i++;
+						s->decl->symbol->param_count = temp;
+					}
+					s = s->next;
+				}
+				printf("\tSUBQ $%d, %%rsp\n", i * 8);
+				
+				// Callee saved registers
+				printf("\tPUSHQ %%rbx\n");
+				printf("\tPUSHQ %%r12\n");
+				printf("\tPUSHQ %%r13\n");
+				printf("\tPUSHQ %%r14\n");
+				printf("\tPUSHQ %%r15\n\n");
+
+				// Fucntion body
+				stmt_codegen(d->code);
+
+				printf("%s_epilogue:\n",
+						d->name);
+				// Restore calle-saved
+				printf("\tPOPQ %%r15\n");
+				printf("\tPOPQ %%r14\n");
+				printf("\tPOPQ %%r13\n");
+				printf("\tPOPQ %%r12\n");
+				printf("\tPOPQ %%rbx\n");
+
+				printf("\tMOVQ %%rbp, %%rsp\n");
+				printf("\tPOPQ %%rbp\n");
+
+				printf("\tRET\n");
+				break;
+			default:
+				break;
+
+		}
+	} else {
+		if (d->value){
+			expr_codegen(d->value);
+			printf("\tMOVQ %s, %s\n",
+					scratch_name(d->value->reg),
+					symbol_codegen(d->symbol));
+		} else {
+			printf("\tMOVQ $0, %s\n",
+					symbol_codegen(d->symbol));
+		}
+	}
+	decl_codegen(d->next);
+}
