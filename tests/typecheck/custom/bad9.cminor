@@ -1,0 +1,2 @@
+a: array [] integer = {1, 2, 3, 4};
+b: array [] boolean;

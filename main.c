@@ -189,18 +189,25 @@ int main(int argc, char* argv[]){
 		exit(0);
 	} 
 	decl_resolve(parser_result);
-	if (strcmp(argv[1], "-resolve") == 0){
-		if (!resolve_result)
-			exit(1);
-		else
+	if (resolve_result){
+		if (strcmp(argv[1], "-resolve") == 0){
 			exit(0);
+		}
 	}
+	else{
+		printf("resolve failed\n");
+		exit(1);
+	}
+
 	decl_typecheck(parser_result);
-	if (strcmp(argv[1], "-typecheck") == 0){
-		if (!typecheck_result)
-			exit(1);
-		else
+	if (typecheck_result){
+		if (strcmp(argv[1], "-typecheck") == 0){
 			exit(0);
+		}
+	}
+	else{
+		printf("typecheck failed\n");
+		exit(1);
 	}
 	if (strcmp(argv[1], "-codegen") == 0){
 		if (argc == 4)

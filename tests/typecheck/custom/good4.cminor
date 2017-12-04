@@ -1,0 +1,7 @@
+// negatives with global variables
+x: integer = -10;
+s: string = "hey there";
+
+main: function integer() = {
+	return x;
+}

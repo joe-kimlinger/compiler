@@ -1,0 +1,8 @@
+main: function integer () = {
+	a: integer = 5;
+	print a;
+	a++;
+	print a;
+	a--
+	print a;
+}

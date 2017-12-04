@@ -1,0 +1,13 @@
+// Recursion
+fib: function integer (x: integer);
+
+main: function integer () = {
+	print fib(6);
+}
+
+fib: function integer (x: integer) = {
+	if (x <= 1)
+		return x;
+
+	return x + fib(x - 1);
+}

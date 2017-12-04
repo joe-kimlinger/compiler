@@ -1,0 +1,13 @@
+y: integer = 10;
+x: integer = 5;
+a: array [] integer = {1, 2, 3};
+func: function void (c: integer, b:integer) = {
+	print "hello", a[1], "\n";
+}
+main: function integer (i: boolean) = {
+	if (x > y){
+		print "uh oh\n";
+	} else {
+		print a[2], "\n";
+	}
+}

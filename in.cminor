@@ -1,12 +1,4 @@
-y: integer = 10;
-x: integer = 5;
-a: array [] integer = {1, 2, 3, 4, 5, 6, 7, 8};
-func: function void (c: integer, b:integer) = {
-	print "hello", a[1], "\n";
-}
-main: function integer (b: boolean) = {
-	i: integer;
-	for (i = 0; i < 8; i++){
-		print a[i], "\n";
-	}
+main: function integer () =
+{
+	print -9/-3;
 }

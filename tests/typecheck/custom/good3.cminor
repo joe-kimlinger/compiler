@@ -1,0 +1,20 @@
+f: function integer (s: integer);
+
+main: function integer(argc: integer, argv: array [] string) = {
+	a: array [10] integer;
+	b: array [5] array [10] integer;
+	i: integer;
+	for (i = 0;i < 10; i++){
+		a[i] = i;
+	}
+	b[0] = a;
+	b[1][0] = f(a[9]);
+
+	return 0;
+}
+
+
+
+f: function integer (s: integer) = {
+	return s + 5;
+}

@@ -1,0 +1,16 @@
+// check for booleans 
+main: function void () = {
+	x: integer = 0;
+	y: integer = 1;
+	c: char = 'c';
+	d: char = '\n';
+
+	if (x == y || x > y || x != y) {
+		y = 5 * 3 % 2;
+	} else if (c == d) {
+		y = 0;
+	}
+	for (;false;){
+		y = 100000;
+	}
+}

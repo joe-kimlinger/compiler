@@ -1,0 +1,23 @@
+// Cannnot compare arrays or functions with || and &&
+f: function void () = {
+	return;
+}
+r: function void () = {
+	return;
+}
+main: function integer () = {
+	x: integer = 1;
+	a: array [5] integer;
+	b: array [5] integer;
+	
+	if(f || r)
+		x = 2;
+	else if (a || b)
+		x = 5;
+	else if (x)
+		x = 7;
+	else
+		x = 0;
+	
+	print x;
+}

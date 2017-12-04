@@ -2,7 +2,7 @@
 
 for testfile in good*.cminor
 do
-	if cminor -print $testfile > $testfile.out
+	if cminor -codegen $testfile $testfile.s > /dev/null
 	then
 		echo "$testfile success (as expected)"
 	else
@@ -10,12 +10,10 @@ do
 	fi
 done
 
-for testfile in bad*.cminor
+for testfile in good*.s
 do
-	if cminor -print $testfile > $testfile.out
-	then
-		echo "$testfile success (INCORRECT)"
-	else
-		echo "$testfile failure (as expected)"
-	fi
+	echo "running $testfile"
+	gcc $testfile library.o -o run > /dev/null
+	./run > /dev/null
+	rm run
 done

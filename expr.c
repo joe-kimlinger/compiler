@@ -66,6 +66,8 @@ void string_literal_print(char *s){
 	while (*c){
 		if (*c == '\n')
 			printf("\\n");
+		else if (*c == '\t')
+			printf("\\t");
 		else
 			printf("%c", *c);
 		c++;
@@ -698,10 +700,10 @@ void expr_codegen( struct expr *e )
 			expr_codegen(e->left);
 			expr_codegen(e->right);
 			printf("\tSUBQ %s, %s\n",
-					scratch_name(e->left->reg),
-					scratch_name(e->right->reg));
-			e->reg = e->right->reg;
-			scratch_free(e->left->reg);
+					scratch_name(e->right->reg),
+					scratch_name(e->left->reg));
+			e->reg = e->left->reg;
+			scratch_free(e->right->reg);
 			break;
 		case EXPR_MUL:
 			expr_codegen(e->left);
@@ -718,7 +720,8 @@ void expr_codegen( struct expr *e )
 		case EXPR_DIV:
 			expr_codegen(e->left);
 			expr_codegen(e->right);
-			printf("\tMOVQ %s, %%rax\n", scratch_name(e->left->reg));
+			printf("\tMOVQ %s, %%rax\n", 
+					scratch_name(e->left->reg));
 			printf("\tCDQ\n");
 			printf("\tIDIVQ %s\n", 
 					scratch_name(e->right->reg));
@@ -746,6 +749,7 @@ void expr_codegen( struct expr *e )
 					scratch_name(e->right->reg),
 					symbol_codegen(e->left->symbol));
 			e->reg = e->left->reg;
+			scratch_free(e->right->reg);
 			break;
 		case EXPR_OR:
 			expr_codegen(e->left);
@@ -892,7 +896,8 @@ void expr_codegen( struct expr *e )
 		case EXPR_NEGATION:
 			break;
 		case EXPR_NEGATIVE:
-			printf("\tNEG %s\n",
+			expr_codegen(e->left);
+			printf("\tNEGQ %s\n",
 					scratch_name(e->left->reg));
 			e->reg = e->left->reg;
 			break;
@@ -929,7 +934,12 @@ void expr_codegen( struct expr *e )
 			}
 			break;
 		case EXPR_NAME:
-			if (e->symbol->type->kind != TYPE_FUNCTION){
+			if (e->symbol->type->kind == TYPE_STRING){
+				e->reg = scratch_alloc();
+				printf("\tLEAQ %s, %s\n",
+						symbol_codegen(e->symbol),
+						scratch_name(e->reg));
+			} else if (e->symbol->type->kind != TYPE_FUNCTION){
 				e->reg = scratch_alloc();
 				printf("\tMOVQ %s, %s\n",
 						symbol_codegen(e->symbol),

@@ -142,7 +142,7 @@ void stmt_typecheck( struct stmt *s )
 			t = expr_typecheck(s->init_expr);
 			type_delete(t);
 			t = expr_typecheck(s->expr);
-			if (t->kind != TYPE_BOOLEAN){
+			if (t && t->kind != TYPE_BOOLEAN){
 				printf("type error: expecting boolean in for loop conditional, got ");
 				type_print(t);
 				printf(" (");
@@ -246,6 +246,7 @@ void stmt_codegen( struct stmt *s )
 				}
 				printf("\tPOPQ %%r11\n");
 				printf("\tPOPQ %%r10\n");
+				scratch_free(e->left->reg);
 				e = e->right;
 			}
 			break;
@@ -273,12 +274,14 @@ void stmt_codegen( struct stmt *s )
 			expr_codegen(s->init_expr);
 			printf("%s:\n",
 					label_name(else_label));
-			expr_codegen(s->expr);
-			printf("\tCMPQ $0, %s\n",
-					scratch_name(s->expr->reg));
-			scratch_free(s->expr->reg);
-			printf("\tJE %s\n",
-					label_name(done_label));
+			if (s->expr){
+				expr_codegen(s->expr);
+				printf("\tCMPQ $0, %s\n",
+						scratch_name(s->expr->reg));
+				scratch_free(s->expr->reg);
+				printf("\tJE %s\n",
+						label_name(done_label));
+			}
 			stmt_codegen(s->body);
 			expr_codegen(s->next_expr);
 			printf("\tJMP %s\n",

@@ -1,0 +1,18 @@
+//Unequal array sizes on assignemnt and initialization and passing multi domension arrays
+a: array [5] integer = {5, 4, 3, 2, 1};
+x: array [3] boolean = {true, false, true};
+y: array [5] boolean;
+
+func: function void (s: array [] array [] array [2] integer);
+
+main: function void() = {
+	y = x;
+	z: array [4] array [3] array [2] integer;
+	func(z);
+	return;
+}
+
+
+func: function void (s: array [] array [] array [2] integer) = {
+	return;
+}

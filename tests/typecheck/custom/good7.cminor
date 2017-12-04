@@ -1,0 +1,15 @@
+x: string = "hello";
+
+main: function void () = {
+	s: string = x;
+	{
+		s: integer = 0;
+		r: integer = s;
+		x: boolean = true;
+	}
+	s = "This should work";
+	x = s;
+	print;
+	return;
+	
+}

@@ -79,7 +79,7 @@ struct decl * parser_result = 0;
 %type <stmt> stmt stmt2 stmt3 stmt4 stmt_list
 %type <type> type
 %type <expr> expr expr2 expr3 expr4 expr5 expr6 expr7 expr8 expr9 expr10 expr11 opt_expr expr_list bracket_list expr_list2
-%type <param_list> param_list
+%type <param_list> param_list param_list2
 %type <name> ident
 
 
@@ -268,11 +268,15 @@ stmt_list	: stmt stmt_list
 				{ $$ = 0; }
 			;
 
-param_list	: ident TOKEN_COLON type 
-				{ $$ = param_list_create($1, $3, 0); }
-			| param_list TOKEN_COMMA ident TOKEN_COLON type 
-				{ $1->next = param_list_create($3, $5, 0); $$ = $1; }
+param_list	: ident TOKEN_COLON type param_list2
+				{ $$ = param_list_create($1, $3, $4); }
 			| 
+				{ $$ = 0; }
+			;
+
+param_list2 : TOKEN_COMMA ident TOKEN_COLON type param_list2
+				{ $$ = param_list_create($2, $4, $5); }
+			|
 				{ $$ = 0; }
 			;
 

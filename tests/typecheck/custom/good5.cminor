@@ -1,0 +1,11 @@
+main: function void (i: integer) = {
+	for (i = 0; true; i++){
+		s: string = "infinite loop....";
+		print s;
+	}
+	s: string = "new scope, new string";
+	if (false){
+		s: string;
+		s = "hello";
+	}
+}
