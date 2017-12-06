@@ -207,9 +207,9 @@ expr10		: ident expr11
 			| TOKEN_STRING_LITERAL
 				{ $$ = expr_create_string_literal(strdup(yytext)); }
 			| TOKEN_TRUE
-				{ $$ = expr_create_boolean_literal(0); }
-			| TOKEN_FALSE
 				{ $$ = expr_create_boolean_literal(1); }
+			| TOKEN_FALSE
+				{ $$ = expr_create_boolean_literal(0); }
 			| TOKEN_LCURLY expr expr_list2 TOKEN_RCURLY
 				{ $$ = expr_create(EXPR_ARRAY_INIT, 0, expr_create(EXPR_ARG, $2, $3, 10), 10); }
 			| TOKEN_LPAREN expr TOKEN_RPAREN

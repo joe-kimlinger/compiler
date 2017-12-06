@@ -1,0 +1,36 @@
+// Program adapted from fundamentals of computing lab 2 :)
+main: function integer() = {
+  x: integer;
+  y: integer;
+  max: integer =  0;
+  min: integer = 1;
+  minspot: integer;
+  maxspot: integer;
+  i: integer;
+
+  print "Plotting y = e^(-x)*cos(2*pi*x) from x = 0 to x = 4.0\n";
+  print "X     Y\n";
+
+  for (x = 0; x <=16; x++){
+    y = (x-8)^2;
+    
+    if (y > max){
+      max = y;
+      maxspot = x;
+    }
+    if (y < min){
+      min = y;
+      minspot = x;
+    }
+
+    print x, " ", y;
+
+    for ( i = 0; i <= y; i++){
+      print 'X';
+    }
+	print '\n';
+  }
+  
+  print "The maximum of ", max, " was at ", maxspot, '\n';
+  print "The minimum of ", min, " was at ", minspot, '\n';
+}

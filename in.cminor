@@ -1,4 +1,4 @@
 main: function integer () =
 {
-	print -9/-3;
+	print -9/3;
 }

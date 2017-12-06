@@ -1,0 +1,11 @@
+x: string = "there\n";
+main: function integer () = {
+	s: string = "hello\n";
+	a: string;
+	b: string;
+	a = s;
+	b = a;
+	print b;
+	a = x;
+	print a;
+}

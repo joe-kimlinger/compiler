@@ -1,0 +1,4 @@
+main: function integer () = {
+	i: integer = 5 + 2 ^ 3 * 5 + 2 ^ 4 / 2 % 3 * 3;
+	print "This should print 51:\n", i, '\n';
+}

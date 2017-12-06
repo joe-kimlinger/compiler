@@ -60,7 +60,7 @@ struct expr * expr_create_string_literal( char *str ){
 	return e;
 }
 
-void string_literal_print(char *s){
+void expr_string_literal_print(char *s){
 	char *c = s;
 	printf("\"");
 	while (*c){
@@ -94,7 +94,7 @@ void expr_print(struct expr *e){
 				printf("false");
 			return;
 		case EXPR_STRING_LITERAL:
-			string_literal_print(e->string_literal);
+			expr_string_literal_print(e->string_literal);
 			return;
 		case EXPR_NAME:
 			printf("%s", e->name);
@@ -627,12 +627,32 @@ void compare_codegen(struct expr *e, const char* s){
 	expr_codegen(e->right);
 	int lbl_1 = label_create();
 	int lbl_2 = label_create();
-	printf("\tCMPQ %s, %s\n",
-			scratch_name(e->right->reg),
-			scratch_name(e->left->reg));
-	printf("\t%s %s\n",
-			s,
-			label_name(lbl_1));
+	if (expr_typecheck(e->left)->kind == TYPE_STRING && expr_typecheck(e->right)->kind == TYPE_STRING){
+		printf("\tMOVQ %s, %%rdi\n",
+				scratch_name(e->left->reg));
+		printf("\tMOVQ %s, %%rsi\n",
+				scratch_name(e->right->reg));
+		printf("\tPUSHQ %%r10\n");
+		printf("\tPUSHQ %%r11\n");
+		scratch_push();
+		printf("\tCALL string_compare\n");
+		printf("\tPOPQ %%r11\n");
+		printf("\tPOPQ %%r10\n");
+		printf("\tMOVQ $0, %s\n",
+				scratch_name(e->left->reg));
+		printf("\tCMPQ %%rax, %s\n",
+				scratch_name(e->left->reg));
+		printf("\tJE %s\n",
+				label_name(lbl_1));
+		
+	} else {
+		printf("\tCMPQ %s, %s\n",
+				scratch_name(e->right->reg),
+				scratch_name(e->left->reg));
+		printf("\t%s %s\n",
+				s,
+				label_name(lbl_1));
+	}
 	printf("\tMOVQ $0, %s\n",
 			scratch_name(e->right->reg));
 	printf("\tJMP %s\n",
@@ -668,7 +688,7 @@ void expr_codegen( struct expr *e )
 			printf("%s:\n", 
 					label_name(i));
 			printf("\t.string ");
-			string_literal_print(e->string_literal);
+			expr_string_literal_print(e->string_literal);
 			printf("\n");
 			printf("\t.text\n");
 			printf("\tLEAQ %s, %s\n",
@@ -722,7 +742,7 @@ void expr_codegen( struct expr *e )
 			expr_codegen(e->right);
 			printf("\tMOVQ %s, %%rax\n", 
 					scratch_name(e->left->reg));
-			printf("\tCDQ\n");
+			printf("\tCQO\n");
 			printf("\tIDIVQ %s\n", 
 					scratch_name(e->right->reg));
 			printf("\tMOVQ %%rax, %s\n", 
@@ -735,7 +755,7 @@ void expr_codegen( struct expr *e )
 			expr_codegen(e->right);
 			printf("\tMOVQ %s, %%rax\n", 
 					scratch_name(e->left->reg));
-			printf("\tCDQ\n");
+			printf("\tCQO\n");
 			printf("\tIDIVQ %s\n", 
 					scratch_name(e->right->reg));
 			printf("\tMOVQ %%rdx, %s\n", 
@@ -745,11 +765,25 @@ void expr_codegen( struct expr *e )
 			break;
 		case EXPR_ASSIGN:
 			expr_codegen(e->right);
-			printf("\tMOVQ %s, %s\n",
-					scratch_name(e->right->reg),
-					symbol_codegen(e->left->symbol));
-			e->reg = e->left->reg;
-			scratch_free(e->right->reg);
+			if (e->left->kind == EXPR_SUBSCRIPT){
+				expr_codegen(e->left->right);
+				i = scratch_alloc();
+				printf("\tLEAQ %s, %s\n",
+						symbol_codegen(e->left->left->symbol),
+						scratch_name(i));
+				printf("\tMOVQ %s, (%s, %s, 8)\n",
+						scratch_name(e->right->reg),
+						scratch_name(i),
+						scratch_name(e->left->right->reg));
+				scratch_free(e->left->right->reg);
+				scratch_free(e->right->reg);
+			} else {
+				printf("\tMOVQ %s, %s\n",
+						scratch_name(e->right->reg),
+						symbol_codegen(e->left->symbol));
+				scratch_free(e->left->reg);
+				scratch_free(e->right->reg);
+			}
 			break;
 		case EXPR_OR:
 			expr_codegen(e->left);
@@ -852,9 +886,15 @@ void expr_codegen( struct expr *e )
 		case EXPR_SUBSCRIPT:
 			expr_codegen(e->right);
 			i = scratch_alloc();
-			printf("\tLEAQ %s, %s\n",
-					symbol_codegen(e->left->symbol),
-					scratch_name(i));
+			if (e->left->symbol->kind == SYMBOL_PARAM){
+				printf("\tMOVQ %s, %s\n",
+						symbol_codegen(e->left->symbol),
+						scratch_name(i));
+			} else {
+				printf("\tLEAQ %s, %s\n",
+						symbol_codegen(e->left->symbol),
+						scratch_name(i));
+			}
 			printf("\tMOVQ (%s, %s, 8), %s\n",
 					scratch_name(i),
 					scratch_name(e->right->reg),
@@ -881,6 +921,8 @@ void expr_codegen( struct expr *e )
 			expr_codegen(e->right);
 			printf("\tMOVQ %s, %%rdi\n",
 					scratch_name(e->left->reg));
+			printf("\tMOVQ %s, %%rsi\n",
+					scratch_name(e->right->reg));
 			printf("\tPUSHQ %%r10\n");
 			printf("\tPUSHQ %%r11\n");
 			scratch_push();
@@ -894,6 +936,12 @@ void expr_codegen( struct expr *e )
 			scratch_free(e->right->reg);
 			break;
 		case EXPR_NEGATION:
+			expr_codegen(e->left);
+			printf("\tNOTQ %s\n",
+					scratch_name(e->left->reg));
+			printf("\tANDQ $0x00000001, %s\n",
+					scratch_name(e->left->reg));
+			e->reg = e->left->reg;
 			break;
 		case EXPR_NEGATIVE:
 			expr_codegen(e->left);
@@ -910,6 +958,18 @@ void expr_codegen( struct expr *e )
 				printf("\tMOVQ %s, %s\n",
 						scratch_name(e->reg),
 						symbol_codegen(e->left->symbol));
+			} else if (e->left->kind == EXPR_SUBSCRIPT){
+				expr_codegen(e->left->right);
+				i = scratch_alloc();
+				printf("\tLEAQ %s, %s\n",
+						symbol_codegen(e->left->left->symbol),
+						scratch_name(i));
+				printf("\tMOVQ %s, (%s, %s, 8)\n",
+						scratch_name(e->reg),
+						scratch_name(i),
+						scratch_name(e->left->right->reg));
+				scratch_free(e->left->right->reg);
+				e->reg = i;
 			} else {
 				printf("\tMOVQ %s, %s(%s)\n",
 						scratch_name(e->reg),
@@ -926,6 +986,18 @@ void expr_codegen( struct expr *e )
 				printf("\tMOVQ %s, %s\n",
 						scratch_name(e->reg),
 						symbol_codegen(e->left->symbol));
+			} else if (e->left->kind == EXPR_SUBSCRIPT){
+				expr_codegen(e->left->right);
+				i = scratch_alloc();
+				printf("\tLEAQ %s, %s\n",
+						symbol_codegen(e->left->left->symbol),
+						scratch_name(i));
+				printf("\tMOVQ %s, (%s, %s, 8)\n",
+						scratch_name(e->reg),
+						scratch_name(i),
+						scratch_name(e->left->right->reg));
+				scratch_free(e->left->right->reg);
+				e->reg = i;
 			} else {
 				printf("\tMOVQ %s, %s(%s)\n",
 						scratch_name(e->reg),
@@ -934,11 +1006,11 @@ void expr_codegen( struct expr *e )
 			}
 			break;
 		case EXPR_NAME:
-			if (e->symbol->type->kind == TYPE_STRING){
-				e->reg = scratch_alloc();
-				printf("\tLEAQ %s, %s\n",
-						symbol_codegen(e->symbol),
-						scratch_name(e->reg));
+			if ((e->symbol->type->kind == TYPE_STRING && e->symbol->kind == SYMBOL_GLOBAL) || e->symbol->type->kind == TYPE_ARRAY){
+					e->reg = scratch_alloc();
+					printf("\tLEAQ %s, %s\n",
+							symbol_codegen(e->symbol),
+							scratch_name(e->reg));
 			} else if (e->symbol->type->kind != TYPE_FUNCTION){
 				e->reg = scratch_alloc();
 				printf("\tMOVQ %s, %s\n",

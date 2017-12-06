@@ -1,0 +1,10 @@
+a: char = 'c';
+main: function integer () = {
+	c: char = 'a';
+	if (a == c)
+		print "Should not print\n";
+	if (c == 'c')
+		print "Should not print\n";
+	if (a == 'c')
+		print "Should print\n";
+}

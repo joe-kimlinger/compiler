@@ -82,6 +82,8 @@ char* string_clean(char* string){
 		if (*rear == '\\'){
 			if (*lead == 'n'){
 				*lead = '\n';
+			} else if (*lead == 't'){
+				*lead = '\t';
 			} else if (*lead == '0'){
 				*rear = '\0';
 			}

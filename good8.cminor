@@ -1,16 +1,13 @@
-// check for booleans 
-main: function void () = {
-	x: integer = 0;
-	y: integer = 1;
-	c: char = 'c';
-	d: char = '\n';
-
-	if (x == y || x > y || x != y) {
-		y = 5 * 3 % 2;
-	} else if (c == d) {
-		y = 0;
-	}
-	for (;false;){
-		y = 100000;
-	}
+main: function integer() = {
+	s: string = "hello";
+	b: string = "there";
+	x: string = s;
+	if (s == x)
+		print "1: should print\n";
+	if (s == b)
+		print "2: should not print\n";
+	if (s == "hello")
+		print "3: should print\n";
+	if (b == "hello")
+		print "4: should not print\n";
 }

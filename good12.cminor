@@ -1,0 +1,23 @@
+say_hello: function string ();
+is_hello: function boolean(s: string );
+
+main: function integer() = {
+	if (is_hello(say_hello()))
+		print "Should print\n";
+	else
+		print "Should not print\n";
+}
+
+
+is_hello: function boolean(s: string) = {
+	if (s == "hello")
+		return true;
+	else
+		return false;
+}
+
+
+say_hello: function string() = {
+	return "hello";
+}
+

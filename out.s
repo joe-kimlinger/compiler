@@ -13,9 +13,8 @@ main:
 	MOVQ $9, %rbx
 	NEGQ %rbx
 	MOVQ $3, %r10
-	NEGQ %r10
 	MOVQ %rbx, %rax
-	CDQ
+	CQO
 	IDIVQ %r10
 	MOVQ %rax, %r10
 	MOVQ %r10, %rdi

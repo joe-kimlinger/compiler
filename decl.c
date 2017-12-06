@@ -217,8 +217,9 @@ void decl_codegen( struct decl *d ){
 				printf("%s:\n",
 						d->name);
 				if (d->value){
-					printf("\t.string \"%s\"\n",
-						d->value->string_literal);
+					printf("\t.string ");
+					expr_string_literal_print(d->value->string_literal);
+					printf("\n");
 				} else {
 					printf("\t.string \"\"\n");
 				}
@@ -310,7 +311,14 @@ void decl_codegen( struct decl *d ){
 		}
 	} else {
 		if (d->value){
-			expr_codegen(d->value);
+			if (d->type->kind != TYPE_STRING || d->value->kind != EXPR_NAME){
+				expr_codegen(d->value);
+			} else {
+				d->value->reg = scratch_alloc();
+				printf("\tMOVQ %s, %s\n",
+						symbol_codegen(d->value->symbol),
+						scratch_name(d->value->reg));
+			}
 			printf("\tMOVQ %s, %s\n",
 					scratch_name(d->value->reg),
 					symbol_codegen(d->symbol));

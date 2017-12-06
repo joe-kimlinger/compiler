@@ -1,0 +1,15 @@
+main: function integer () = {
+	if (true){
+		if (!false){
+			b: boolean = true;
+			if (b)
+				if (b || !b){
+					b = false;
+					if (!b)
+						print "It worked!\n";
+				}
+		}
+	} else {
+		return 0;
+	}
+}
